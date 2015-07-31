@@ -1,0 +1,27 @@
+<div class="row"></div>
+<div class="row">
+	<form id="sign-up-form" class="col s12 m6 offset-m3 z-depth-1">
+		<h3 class="indigo-text text-accent-2">Sign in</h3>
+		<div class="row">
+			<div class="input-field col s12">
+				<i class="material-icons prefix">email</i>
+				<input ng-model="email" id="email-field" type="email">
+				<label for="email-field">Email</label>
+				<p ng-show="error == 'email'" class="error-field"><small>Campo no válido.</small></p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s12">
+				<i class="material-icons prefix">lock</i>
+				<input ng-model="password" id="password" type="password">
+				<label for="password">Password</label>
+				<p ng-show="error == 'password'" class="error-field"><small>Campo no válido.</small></p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col s12 m8">
+				<button ng-click="login(email, password)" class="btn waves-effect waves-light indigo accent-2 right">Sign in</button>
+			</div>
+		</div>
+	</form>
+</div>
