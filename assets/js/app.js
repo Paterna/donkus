@@ -2,7 +2,7 @@ var app = angular.module('app', [
 	'ui.router'
 ]);
 
-app.config(function ($stateProvider, $urlRouterProvider) {
+app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
 	$urlRouterProvider.otherwise('/');
 
 	$stateProvider
@@ -14,16 +14,7 @@ app.config(function ($stateProvider, $urlRouterProvider) {
 		.state('signup', {
 			url: '/signup',
 			templateUrl: 'partials/signup.html',
-			controller: 'appCtrl'
-		})
-		.state('profile', {
-			url: '/profile',
-			templateUrl: 'partials/profile.html'
-		})
-		.state('test-licode', {
-			url: '/test-licode',
-			templateUrl: 'partials/test_licode.html',
-			controller: 'licodeCtrl'
+			controller: 'AuthCtrl'
 		})
 		.state('login', {
 			url: '/login',
@@ -34,17 +25,54 @@ app.config(function ($stateProvider, $urlRouterProvider) {
 			url: '/logout',
 			controller: 'AuthCtrl'
 		})
+		.state('profile', {
+			url: '/profile',
+			templateUrl: 'partials/profile.html'
+		})
+		.state('test-licode', {
+			url: '/test-licode',
+			templateUrl: 'partials/test_licode.html',
+			controller: 'licodeCtrl'
+		});
+
+	var transformResponse = function(response) {
+		var serverResponse = response.data;
+
+		if (serverResponse === undefined || serverResponse.code === undefined)
+			return response;
+
+		if (serverResponse.code !== 0)
+			throw serverResponse;
+
+		response.data = serverResponse.data;
+		return response.data;
+	}
+
+	$httpProvider.interceptors.push(function() {
+		return { response: transformResponse }
+	});
 
 });
 
 app.controller('appCtrl', ['$scope', '$http', '$state',
 	function ($scope, $http, $state) {
-
 		// DEBUG
 		// window.$scope = $scope;
 		// window.$state = $state;
 
+
+	}
+]);
+
+app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
+	function ($scope, $rootScope, $http, $state) {
+
+		if ($rootScope.user)
+			return $state.go('home');
+
 		$scope.email = "";
+		$scope.password = "";
+		$rootScope.user = null;
 		$scope.password1 = "";
 		$scope.password2 = "";
 		$scope.error = "";
@@ -74,53 +102,59 @@ app.controller('appCtrl', ['$scope', '$http', '$state',
 					password1: password1,
 					password2: password2
 				})
-				.success(function (user) {
-					if (user.code == 0) {
-						swal({
-							title: 'Done!',
-							text: 'You signed up as ' + email,
-							type: 'success',
-							confirmButton: 'Ok'
-						}, function () {
-							$state.go('login');
-						});
-					}
-					else if (user.code == 1)
-						sweetAlert("Oops...", "A user with email " + email + " already exist!", "error");
+				.then(function (user) {
+					console.log(user);
+					swal({
+						title: 'Done!',
+						text: 'You signed up as ' + email,
+						type: 'success',
+						confirmButton: 'Ok'
+					}, function () {
+						$state.go('login');
+					});
 				})
-				.error(function (err) {
-					if (user.code > 1)
-						sweetAlert("Error!", err, "error");
+				.catch(function (err) {
+					console.log(err);
+					if (err.code == 1)
+						sweetAlert("Oops...", "A user with email " + email + " already exist!", "error");
+					else
+						sweetAlert("Error!", err.message, "error");
 				});
 			}
 		}
-	}
-]);
-
-app.controller('AuthCtrl', ['$scope', '$http', '$state',
-	function ($scope, $http, $state) {
-
-		$scope.email = "";
-		$scope.password = "";
 
 		$scope.login = function (email, password) {
-			$http.post('/api/users/login', {
+			$http.post('/api/users', {
 				email: email,
 				password: password
 			})
-			.success(function (user) {
-				console.log(user);
+			.then(function (user) {
+				console.log("Usuario: " + JSON.stringify(user));
 				swal({
 					title: 'Good!',
 					text: 'You logged in as ' + email,
 					type: 'success',
 					confirmButton: 'Ok'
 				}, function () {
+					$rootScope.user = user;
 					$state.go('home');
-				});
+				})
 			})
-			.error(function (err) {
-				sweetAlert("Error!", err, "error");
+			.catch(function (err) {
+				sweetAlert("Error!", err.message, "error");
+			});
+		}
+
+		$rootScope.logout = function () {
+			console.log("hola");
+			$http.delete('/api/users')
+			.then(function (obj) {
+				console.log("Object: " + obj)
+				delete $rootScope.user;
+				$state.go('home');
+			})
+			.catch(function (err) {
+				sweetAlert("Error!", err.message, "error");
 			});
 		}
 	}

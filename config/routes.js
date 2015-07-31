@@ -40,9 +40,10 @@ module.exports.routes = {
     view: 'index'
   },
 
-  'post /api/users/new': 'UsersController.newUser',
-  'post /api/users/login': 'AuthController.login',
-  'get /api/users/logout': 'AuthController.logout'
+  'get /api/users': 'AuthController.checkSession',
+  'post /api/users': 'AuthController.login',
+  'delete /api/users': 'AuthController.logout',
+  'post /api/users/new': 'UsersController.newUser'
 
   /***************************************************************************
   *                                                                          *

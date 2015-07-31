@@ -8,12 +8,15 @@
 					<a class="btn waves-effect waves-light indigo accent-1" href="/#/test-licode">
 						Try Licode
 					</a>
-					<a class="btn waves-effect waves-light indigo accent-1" href="/#/signup">
+					<a ng-show="!user" class="btn waves-effect waves-light indigo accent-1" href="/#/signup">
 						Sign up
 					</a>
-					<a href="/#/login">
+					<a ng-show="!user" href="/#/login">
 						Have an account?
 					</a>
+					<button ng-show="user" class="btn waves-effect waves-light indigo accent-1" ng-click="logout()">
+						Log out
+					</button>
 				</div>
 			</div>
 		</div>

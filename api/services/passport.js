@@ -4,7 +4,9 @@ bcrypt = require('bcrypt');
 
 //helper functions
 function findById (id, fn) {
-    User.findOne(id).done(function (err, user) {
+    Users
+    .findOne(id)
+    .exec(function (err, user) {
         if (err)
             return fn(null, null);
         else
@@ -13,10 +15,11 @@ function findById (id, fn) {
 }
 
 function findByEmail(email, fn) {
-    User.findOne({
+    Users
+    .findOne({
         email: email
     })
-    .done(function (err, user) {
+    .exec(function (err, user) {
         // Error handling
         if (err)
             return fn(null, null);
@@ -46,6 +49,7 @@ passport.deserializeUser(function (id, done) {
 // credentials (in this case, a email and password), and invoke a callback
 // with a user object.
 passport.use(new LocalStrategy(
+    { usernameField: 'email' },
     function (email, password, done) {
         // asynchronous verification, for effect...
         process.nextTick(function () {

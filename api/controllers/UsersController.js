@@ -30,13 +30,8 @@ module.exports = {
 					password: password1
 				} )	
 			})
-			.then(function(newuser) {
-				res.json({ code: 0, data: newuser });
-				return newuser;
-			})
-			.catch(function(err) {
-				res.json(err);
-			});
+			.then( res.api_ok )
+			.catch( res.api_error );
 		}
 	}
 };
