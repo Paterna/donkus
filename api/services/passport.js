@@ -71,12 +71,15 @@ passport.use(new LocalStrategy(
                             message: 'Invalid Password'
                         });
                     var returnUser = {
+                        name: user.name,
                         email: user.email,
+                        teams: user.teams,
                         createdAt: user.createdAt,
+                        updatedAt: user.updatedAt,
                         id: user.id
                     };
                     return done(null, returnUser, {
-                        message: 'Logged In Successfully'
+                        message: 'Logged in successfully'
                     });
                 });
             })
