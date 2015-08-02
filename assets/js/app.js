@@ -1,5 +1,6 @@
 var app = angular.module('app', [
-	'ui.router'
+	'ui.router',
+	'ngCookies'
 ]);
 
 app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
@@ -27,7 +28,8 @@ app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
 		})
 		.state('profile', {
 			url: '/profile',
-			templateUrl: 'partials/profile.html'
+			templateUrl: 'partials/profile.html',
+			controller: 'profileCtrl'
 		})
 		.state('test-licode', {
 			url: '/test-licode',
@@ -54,22 +56,22 @@ app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
 
 });
 
-app.controller('appCtrl', ['$scope', '$http', '$state',
-	function ($scope, $http, $state) {
+app.controller('appCtrl', ['$scope', '$http', '$state', '$cookies', 
+	function ($scope, $http, $state, $cookies) {
 		// DEBUG
-		// window.$scope = $scope;
+		window.$scope = $scope;
 		// window.$state = $state;
-
-
+		window.$cookies = $cookies
 	}
 ]);
 
-app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
-	function ($scope, $rootScope, $http, $state) {
+app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state', '$cookies',
+	function ($scope, $rootScope, $http, $state, $cookies) {
 
 		if ($rootScope.user)
 			return $state.go('home');
 
+		$scope.name = "";
 		$scope.email = "";
 		$scope.password = "";
 		$rootScope.user = null;
@@ -77,8 +79,12 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 		$scope.password2 = "";
 		$scope.error = "";
 
-		var validate = function (email, password1, password2) {
+		var validate = function (name, email, password1, password2) {
 			/* TODO */
+			if (!name || name.length < 1) {
+				$scope.error = "name";
+				return false;
+			}
 			if (!email || email.length < 1) {
 				$scope.error = "email";
 				return false;
@@ -95,9 +101,10 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 			return true;
 		}
 
-		$scope.signUp = function (email, password1, password2) {
-			if (validate(email, password1, password2)) {
+		$scope.signUp = function (name, email, password1, password2) {
+			if (validate(name, email, password1, password2)) {
 				$http.post('/api/users/new', {
+					name: name,
 					email: email,
 					password1: password1,
 					password2: password2
@@ -106,7 +113,7 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 					console.log(user);
 					swal({
 						title: 'Done!',
-						text: 'You signed up as ' + email,
+						text: 'You signed up as ' + name,
 						type: 'success',
 						confirmButton: 'Ok'
 					}, function () {
@@ -136,7 +143,8 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 					type: 'success',
 					confirmButton: 'Ok'
 				}, function () {
-					$rootScope.user = user;
+					$cookies.user = user;
+					$rootScope.user = $cookies.user;
 					$state.go('home');
 				})
 			})
@@ -158,108 +166,115 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 	}
 ]);
 
+app.controller('profileCtrl', ['$scope', '$http',
+	function() {
+
+	}
+]);
+
 app.controller('licodeCtrl', ['$scope', '$state',
 	function ($scope, $state) {
-		// var serverUrl = "/";
-		// var localStream;
-		// var room;
+		var serverUrl = "/";
+		var localStream;
+		var room;
 
-		// var getParameterByName = function (name) {
-		// 	name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-		// 	var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-		// 	var results = regex.exec(location.search);
+		var getParameterByName = function (name) {
+			name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+			var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+			var results = regex.exec(location.search);
 
-		// 	return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-		// }
+			return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
 
-		// var printText = function (text) {
-		// 	$scope.messages += '- ' + text + '\n';
-		// }
+		var printText = function (text) {
+			$scope.messages += '- ' + text + '\n';
+		}
 
-		// var init = function () {
-		// 	var config = {
-		// 		audio: true,
-		// 		video: true,
-		// 		data: true,
-		// 		videoSize: [640, 480, 640, 480]
-		// 	};
+		var init = function () {
+			console.log("initializing...");
+			var config = {
+				audio: true,
+				video: true,
+				data: true,
+				videoSize: [640, 480, 640, 480]
+			};
 
-		// 	localStream = Erizo.Stream(config);
+			localStream = Erizo.Stream(config);
 
-		// 	var createToken = function (username, role, callback) {
+			var createToken = function (username, role, callback) {
 
-		// 		var req = new XMLHttpRequest();
-		// 		var url = serverUrl + 'createToken/';
-		// 		var body = {
-		// 			username: username,
-		// 			role: role
-		// 		};
+				var req = new XMLHttpRequest();
+				var url = serverUrl + 'createToken/';
+				var body = {
+					username: username,
+					role: role
+				};
 
-		// 		req.onreadystatechange = function () {
-		// 			if (req.readyState === 4)
-		// 				callback(req.responseText);
-		// 		};
+				req.onreadystatechange = function () {
+					if (req.readyState === 4)
+						callback(req.responseText);
+				};
 
-		// 		req.open('POST', url, true);
-		// 		req.setRequestHeader('Content-Type', 'application/json');
-		// 		req.send(JSON.stringify(body));
-		// 	};
+				req.open('POST', url, true);
+				req.setRequestHeader('Content-Type', 'application/json');
+				req.send(JSON.stringify(body));
+			};
 
-		// 	createToken("user", "presenter", function (response) {
-		// 		var token = response;
-		// 		console.log(token);
-		// 		room = Erizo.Room({ token: token });
+			createToken("user", "presenter", function (response) {
+				var token = response;
+				console.log(token);
+				room = Erizo.Room({ token: token });
 
-		// 		localStream.addEventListener("access-accepted", function () {
-		// 		printText('Mic and Cam OK');
+				localStream.addEventListener("access-accepted", function () {
+				printText('Mic and Cam OK');
 
-		// 		var subscribeToStreams = function (streams) {
-		// 			for (var i in streams) {
-		// 				var stream = streams[i];
-		// 				room.subscribe(stream);
-		// 			}
-		// 		};
+				var subscribeToStreams = function (streams) {
+					for (var i in streams) {
+						var stream = streams[i];
+						room.subscribe(stream);
+					}
+				};
 
-		// 		room.addEventListener("room-connected", function (roomEvent) {
-		// 			printText('Connected to the room OK');
-		// 			room.publish(localStream, { maxVideoBW: 300 });
-		// 		});
+				room.addEventListener("room-connected", function (roomEvent) {
+					printText('Connected to the room OK');
+					room.publish(localStream, { maxVideoBW: 300 });
+				});
 
-		// 		room.addEventListener("stream-subscribed", function (streamEvent) {
-		// 			printText('Subscribed to your local stream OK');
-		// 			var stream = streamEvent.stream;
-		// 			stream.show("my_subscribed_video");
-		// 		});
+				room.addEventListener("stream-subscribed", function (streamEvent) {
+					printText('Subscribed to your local stream OK');
+					var stream = streamEvent.stream;
+					stream.show("my_subscribed_video");
+				});
 
-		// 		room.addEventListener("stream-added", function (streamEvent) {
-		// 			printText('Local stream published OK');
-		// 			var streams = [];
-		// 			streams.push(streamEvent.stream);
-		// 			subscribeToStreams(streams);
-		// 		});
+				room.addEventListener("stream-added", function (streamEvent) {
+					printText('Local stream published OK');
+					var streams = [];
+					streams.push(streamEvent.stream);
+					subscribeToStreams(streams);
+				});
 
-		// 		room.addEventListener("stream-removed", function (streamEvent) {
-		// 			// Remove stream from DOM
-		// 			var stream = streamEvent.stream;
-		// 			if (stream.elementID !== undefined) {
-		// 				var element = document.getElementById(stream.elementID);
-		// 				document.body.removeChild(element);
-		// 			}
-		// 		});
+				room.addEventListener("stream-removed", function (streamEvent) {
+					// Remove stream from DOM
+					var stream = streamEvent.stream;
+					if (stream.elementID !== undefined) {
+						var element = document.getElementById(stream.elementID);
+						document.body.removeChild(element);
+					}
+				});
 
-		// 		room.addEventListener("stream-failed", function (streamEvent) {
-		// 			console.log("STREAM FAILED, DISCONNECTION");
-		// 			printText('STREAM FAILED, DISCONNECTION');
-		// 			room.disconnect();
-		// 		});
+				room.addEventListener("stream-failed", function (streamEvent) {
+					console.log("STREAM FAILED, DISCONNECTION");
+					printText('STREAM FAILED, DISCONNECTION');
+					room.disconnect();
+				});
 
-		// 		room.connect();
+				room.connect();
 
-		// 		localStream.show("my_local_video");
+				localStream.show("my_local_video");
 
-		// 		});
-		// 		localStream.init();
-		// 	});
-		// };
+				});
+				localStream.init();
+			});
+		};
 	}
 ]);

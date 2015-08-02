@@ -1,27 +1,41 @@
 <nav id="main-nav" class="indigo accent-2">
-	<div class="container">
-		<div class="row">
-			<div class="col s3">
-				<a href="/#/" class="logo">Logo</a>
-			</div>
-			<div class="col s8">
-					<a class="btn waves-effect waves-light indigo accent-1" href="/#/test-licode">
-						Try Licode
-					</a>
-					<a ng-show="!user" class="btn waves-effect waves-light indigo accent-1" href="/#/signup">
-						Sign up
-					</a>
-					<a ng-show="!user" href="/#/login">
-						Have an account?
-					</a>
-					<button ng-show="user" class="btn waves-effect waves-light indigo accent-1" ng-click="logout()">
-						Log out
-					</button>
-				</div>
+	<div class="row">
+		<div class="col s6">
+			
+		</div>
+		<div class="col s6 offset-m6">
+				<a class="btn waves-effect waves-light indigo accent-1" href="/#/test-licode">
+					Try Licode
+				</a>
+				<a ng-show="!user" class="btn waves-effect waves-light indigo accent-1" href="/#/signup">
+					Sign up
+				</a>
+				<a ng-show="!user" href="/#/login">
+					Log in
+				</a>
 			</div>
 		</div>
 	</div>
 </nav>
-<div class="container">
-	<div ui-view></div>
+
+<div class="row">
+	<div ng-show="user" class="col s12 m4 l3">
+		<ul class="side-nav fixed grey lighten-4">
+			<li class="indigo accent-2">
+				<ul id="dropdown2" class="dropdown-content" style="z-index: 100">
+					<li><a class="btn transparent" style="box-shadow: none" href="/#/profile"><i class="material-icons left">perm_identity</i>profile</a></li>
+					<li><a class="btn transparent" style="box-shadow: none" href="/#/"><i class="material-icons left">settings</i>settings</a></li>
+					<li><a class="btn transparent" style="box-shadow: none" href="/#/"><i class="material-icons left">group_work</i>teams</a></li>
+					<li><a ng-click="logout()" class="btn transparent" style="box-shadow: none"><i class="material-icons left">power_settings_new</i>log out</a></li>
+				</ul>
+				<a class="btn transparent dropdown-button grey-text text-lighten-5" style="box-shadow: none" href="#!" data-activates="dropdown2"><i class="material-icons left">account_circle</i>{{ user.name }}<i class="mdi-navigation-arrow-drop-down right"></i></a>
+			</li>
+			<li class="bold"><a class="waves-effect waves-teal" href="/#/">List item</a></li>
+			<li class="bold"><a class="waves-effect waves-teal" href="/#/">List item</a></li>
+			<li class="bold"><a class="waves-effect waves-teal" href="/#/">List item</a></li>
+		</ul>
+	</div>
+	<div class="col s12" ng-class="{'m8 l9 offset-m4 offset-l3' : user }">
+		<div ui-view></div>
+	</div>
 </div>
