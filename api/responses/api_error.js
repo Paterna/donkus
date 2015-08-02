@@ -11,5 +11,5 @@ module.exports = function (err, options) {
 	res.json({
 		code: code,
 		message: e
-	})
+	});
 }

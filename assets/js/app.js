@@ -146,10 +146,8 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 		}
 
 		$rootScope.logout = function () {
-			console.log("hola");
 			$http.delete('/api/users')
 			.then(function (obj) {
-				console.log("Object: " + obj)
 				delete $rootScope.user;
 				$state.go('home');
 			})
