@@ -88,12 +88,10 @@ app.run(['$rootScope', '$http', '$state',
 
             var currentUser = $rootScope.user;
 
-            console.log(currentUser);
-
             if (requiresAuth && requiresNoAuth)
                 console.error("Lógica de estado incongruente. Estado requiere autenticación y no autenticación.");
 
-            if (!requiresNoAuth && !requiresAuth) // No se fuerza un estado con autenticación
+            if (!requiresNoAuth && !requiresAuth && currentUser !== undefined) // No se fuerza un estado con autenticación
                 return;
 
             if (requiresAuth && currentUser)
@@ -126,24 +124,20 @@ app.run(['$rootScope', '$http', '$state',
                     return;
                 }
 
-                if (requiresAuth) {
-                    $state.go(toState, toParams);
-                }
+                // if (requiresAuth) o es un estado que no impone tipo de auth
+                $state.go(toState, toParams);
             })
             .catch(function () {
 
                 $rootScope.user = null;
-
-                if (requiresNoAuth) {
-                    $state.go(toState, toParams);
-                    return;
-                }
 
                 if (requiresAuth) {
                     $state.go('login', toParams);
                     return;
                 }
 
+                // if (requiresNoAuth) o es un estado que no impone tipo de auth
+                $state.go(toState, toParams);
             });
         })
 	}
