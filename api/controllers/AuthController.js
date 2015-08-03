@@ -8,7 +8,9 @@ module.exports = {
 
   checkSession: function (req, res) {
     if (req.user)
-      return req.user;
+      return res.api_ok(req.user);
+    else
+      return res.api_error();
   },
 
   login: function (req, res) {

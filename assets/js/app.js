@@ -1,6 +1,5 @@
 var app = angular.module('app', [
-	'ui.router',
-	'ngCookies'
+	'ui.router'
 ]);
 
 app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
@@ -15,21 +14,25 @@ app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
 		.state('signup', {
 			url: '/signup',
 			templateUrl: 'partials/signup.html',
-			controller: 'AuthCtrl'
+			controller: 'AuthCtrl',
+			require: { noAuth: true }
 		})
 		.state('login', {
 			url: '/login',
 			templateUrl: 'partials/login.html',
-			controller: 'AuthCtrl'
+			controller: 'AuthCtrl',
+			require: { noAuth: true }
 		})
 		.state('logout', {
 			url: '/logout',
-			controller: 'AuthCtrl'
+			controller: 'AuthCtrl',
+			require: { auth: true }
 		})
 		.state('profile', {
 			url: '/profile',
 			templateUrl: 'partials/profile.html',
-			controller: 'profileCtrl'
+			controller: 'profileCtrl',
+			require: { auth: true }
 		})
 		.state('test-licode', {
 			url: '/test-licode',
@@ -56,17 +59,106 @@ app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
 
 });
 
-app.controller('appCtrl', ['$scope', '$http', '$state', '$cookies', 
-	function ($scope, $http, $state, $cookies) {
-		// DEBUG
-		window.$scope = $scope;
-		// window.$state = $state;
-		window.$cookies = $cookies
+app.run(['$rootScope', '$http', '$state',
+	function ($rootScope, $http, $state) {
+    	/*
+        $rootScope.user = undefined -> No se aun nada sobre el usuario.
+        $rootScope.user = null -> No hay usuario ni sesion en el lado del servidor.
+        $rootScope.user = something -> Ese es nuestro user actual.
+        */
+        $rootScope.user = undefined;
+
+        $rootScope.logout = function () {
+			$http.delete('/api/users')
+			.then(function (obj) {
+				$rootScope.user = null;
+				$state.go('home');
+			})
+			.catch(function (err) {
+				sweetAlert("Error!", err.message, "error");
+			});
+		}
+
+        $rootScope.$on('$stateChangeStart', function (e, toState , toParams, fromState, fromParams) {
+
+            var hasRequireAuth = toState.require &&
+                (toState.require.auth !== undefined || toState.require.noAuth !== undefined);
+            var requiresAuth = hasRequireAuth && toState.require.auth;
+            var requiresNoAuth = hasRequireAuth && toState.require.noAuth;
+
+            var currentUser = $rootScope.user;
+
+            console.log(currentUser);
+
+            if (requiresAuth && requiresNoAuth)
+                console.error("Lógica de estado incongruente. Estado requiere autenticación y no autenticación.");
+
+            if (!requiresNoAuth && !requiresAuth) // No se fuerza un estado con autenticación
+                return;
+
+            if (requiresAuth && currentUser)
+                return;
+
+            if (requiresNoAuth && currentUser === null)
+                return;
+
+            if (requiresAuth && currentUser === null) {
+                e.preventDefault();
+                $state.go('login', toParams);
+                return;
+            }
+
+            if (requiresNoAuth && currentUser) {
+                e.preventDefault();
+                $state.go(fromState || 'home', fromParams);
+                return;
+            }
+
+            e.preventDefault();
+
+            $http.get('/api/users')
+            .then(function (user) {
+
+                $rootScope.user = user;
+
+                if (requiresNoAuth) {
+                    $state.go(fromState || 'home', fromParams);
+                    return;
+                }
+
+                if (requiresAuth) {
+                    $state.go(toState, toParams);
+                }
+            })
+            .catch(function () {
+
+                $rootScope.user = null;
+
+                if (requiresNoAuth) {
+                    $state.go(toState, toParams);
+                    return;
+                }
+
+                if (requiresAuth) {
+                    $state.go('login', toParams);
+                    return;
+                }
+
+            });
+        })
 	}
 ]);
 
-app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state', '$cookies',
-	function ($scope, $rootScope, $http, $state, $cookies) {
+app.controller('appCtrl', ['$scope', '$http', '$state', 
+	function ($scope, $http, $state) {
+		// DEBUG
+		window.$scope = $scope;
+		// window.$state = $state;
+	}
+]);
+
+app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
+	function ($scope, $rootScope, $http, $state) {
 
 		if ($rootScope.user)
 			return $state.go('home');
@@ -143,21 +235,9 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state', '$cookies
 					type: 'success',
 					confirmButton: 'Ok'
 				}, function () {
-					$cookies.user = user;
-					$rootScope.user = $cookies.user;
+					$rootScope.user = user;
 					$state.go('home');
 				})
-			})
-			.catch(function (err) {
-				sweetAlert("Error!", err.message, "error");
-			});
-		}
-
-		$rootScope.logout = function () {
-			$http.delete('/api/users')
-			.then(function (obj) {
-				delete $rootScope.user;
-				$state.go('home');
 			})
 			.catch(function (err) {
 				sweetAlert("Error!", err.message, "error");
