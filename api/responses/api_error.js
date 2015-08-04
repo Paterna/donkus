@@ -1,3 +1,13 @@
+/*
+ * API error handler.
+ *
+ * 0 -> Success
+ * 1 -> UserCtrk error
+ * 2 -> Auth error
+ * 1X -> Licode Room error
+ * 2X -> Licode User error
+ * 
+ */
 module.exports = function (err, options) {
 	var res = this.res;
 	var e = "";

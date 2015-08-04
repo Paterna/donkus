@@ -1,5 +1,5 @@
 /**
- * UsersController
+ * UserController
  *
  * @description :: Server-side logic for managing users
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
@@ -29,14 +29,14 @@ module.exports = {
 		}
 
 		if (validate) {
-			Users.findOne({
+			User.findOne({
 				email: email
 			})
 			.then(function (user) {
 				if (user)
-					throw { code: 1, msg: "User already exists", user: user };
+					throw { code: 1, message: "User already exists", user: user };
 
-				return Users.create( {
+				return User.create( {
 					name: name,
 					email: email,
 					password: password1
