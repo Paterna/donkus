@@ -21,21 +21,6 @@
  */
 
 module.exports.routes = {
-
-  /***************************************************************************
-  *                                                                          *
-  * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
-  * etc. depending on your default view engine) your home page.              *
-  *                                                                          *
-  * (Alternatively, remove this and add an `index.html` file in your         *
-  * `assets` directory)                                                      *
-  *                                                                          *
-  ***************************************************************************/
-
-  // '/': {
-  //   view: 'homepage'
-  // }
-
   '/': {
     view: 'index'
   },
@@ -43,16 +28,16 @@ module.exports.routes = {
   'get /api/users': 'AuthController.checkSession',
   'post /api/users': 'AuthController.login',
   'delete /api/users': 'AuthController.logout',
-  'post /api/users/new': 'UsersController.newUser'
+  'post /api/users/new': 'UserController.newUser',
 
-  /***************************************************************************
-  *                                                                          *
-  * Custom routes here...                                                    *
-  *                                                                          *
-  * If a request to a URL doesn't match any of the custom routes above, it   *
-  * is matched against Sails route blueprints. See `config/blueprints.js`    *
-  * for configuration options and examples.                                  *
-  *                                                                          *
-  ***************************************************************************/
+  /* Licode API routes */
+  // Rooms
+  'get /api/licode/get_rooms': 'LicodeController.getRooms',
+  'get /api/licode/get_room/:room': 'LicodeController.getRoom',
+  'post /api/licode/create_room': 'LicodeController.createRoom',
+  'delete /api/licode/delete_room/:room': 'LicodeController.deleteRoom',
+  // Users
+  'post /api/licode/create_token/:room': 'LicodeController.createToken',
+  'get /api/licode/get_users/:room': 'LicodeController.getUsers'
 
 };
