@@ -25,10 +25,17 @@ module.exports.routes = {
     view: 'index'
   },
 
-  'get /api/users': 'AuthController.checkSession',
-  'post /api/users': 'AuthController.login',
-  'delete /api/users': 'AuthController.logout',
-  'post /api/users/new': 'UserController.newUser',
+  /* User API routes */
+  'get /api/user': 'AuthController.checkSession',
+  'post /api/user': 'AuthController.login',
+  'delete /api/user': 'AuthController.logout',
+  'post /api/user/new': 'UserController.newUser',
+  'get /api/user/teams': 'UserController.getTeams',
+
+  /* Team API routes */
+  'get /api/team/:team': 'TeamController.getTeam',
+  'get /api/team/:team/users': 'TeamController.getUsers',
+  'post /api/team/create': 'TeamController.create',
 
   /* Licode API routes */
   // Rooms

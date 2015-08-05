@@ -2,81 +2,95 @@ var app = angular.module('app', [
 	'ui.router'
 ]);
 
-app.config(function ($stateProvider, $urlRouterProvider, $httpProvider) {
-	$urlRouterProvider.otherwise('/');
+app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
+	function ($stateProvider, $urlRouterProvider, $httpProvider) {
+		$urlRouterProvider.otherwise('/');
 
-	$stateProvider
-		.state('home', {
-			url: '/',
-			templateUrl: 'partials/index.html',
-			controller: 'appCtrl'
-		})
-		.state('signup', {
-			url: '/signup',
-			templateUrl: 'partials/signup.html',
-			controller: 'AuthCtrl',
-			require: { noAuth: true }
-		})
-		.state('login', {
-			url: '/login',
-			templateUrl: 'partials/login.html',
-			controller: 'AuthCtrl',
-			require: { noAuth: true }
-		})
-		.state('logout', {
-			url: '/logout',
-			controller: 'AuthCtrl',
-			require: { auth: true }
-		})
-		.state('profile', {
-			url: '/profile',
-			templateUrl: 'partials/profile.html',
-			controller: 'profileCtrl',
-			require: { auth: true }
-		})
-		.state('teams', {
-			url: '/teams',
-			temapleUrl: 'partials/teams.html',
-			controlle: 'teamsCtrl',
-			require: { auth: true }
-		})
-		.state('test-licode', {
-			url: '/test-licode',
-			templateUrl: 'partials/test_licode.html',
-			controller: 'licodeCtrl',
-			require: { auth: true }
+		$stateProvider
+			.state('home', {
+				url: '/',
+				templateUrl: 'partials/index.html',
+				controller: 'appCtrl'
+			})
+			.state('signup', {
+				url: '/signup',
+				templateUrl: 'partials/signup.html',
+				controller: 'AuthCtrl',
+				require: { noAuth: true }
+			})
+			.state('login', {
+				url: '/login',
+				templateUrl: 'partials/login.html',
+				controller: 'AuthCtrl',
+				require: { noAuth: true }
+			})
+			.state('logout', {
+				url: '/logout',
+				controller: 'AuthCtrl',
+				require: { auth: true }
+			})
+			.state('profile', {
+				url: '/profile',
+				templateUrl: 'partials/profile.html',
+				controller: 'profileCtrl',
+				require: { auth: true }
+			})
+			.state('team', {
+				url: '/team',
+				templateUrl: 'partials/team.html',
+				controller: 'teamsCtrl',
+				require: { auth: true }
+			})
+			.state('teams', {
+				url: '/teams',
+				templateUrl: 'partials/teams.html',
+				controller: 'teamsCtrl',
+				require: { auth: true }
+			})
+			.state('teams_new', {
+				url: '/teams/new',
+				templateUrl: 'partials/teams_new.html',
+				controller: 'teamsCtrl',
+				require: { auth: true }
+			})
+			.state('test-licode', {
+				url: '/test-licode',
+				templateUrl: 'partials/test_licode.html',
+				controller: 'licodeCtrl',
+				require: { auth: true }
+			});
+
+		var transformResponse = function(response) {
+			var serverResponse = response.data;
+
+			if (serverResponse === undefined || serverResponse.code === undefined)
+				return response;
+
+			if (serverResponse.code !== 0)
+				throw serverResponse;
+
+			response.data = serverResponse.data;
+			return response.data;
+		}
+
+		$httpProvider.interceptors.push(function() {
+			return { response: transformResponse }
 		});
-
-	var transformResponse = function(response) {
-		var serverResponse = response.data;
-
-		if (serverResponse === undefined || serverResponse.code === undefined)
-			return response;
-
-		if (serverResponse.code !== 0)
-			throw serverResponse;
-
-		response.data = serverResponse.data;
-		return response.data;
 	}
-
-	$httpProvider.interceptors.push(function() {
-		return { response: transformResponse }
-	});
-
-});
+]);
 
 app.run(['$rootScope', '$http', '$state',
 	function ($rootScope, $http, $state) {
     	/*
-        $rootScope.user = undefined -> No se aun nada sobre el usuario.
-        $rootScope.user = null -> No hay usuario ni sesion en el lado del servidor.
-        $rootScope.user = something -> Ese es nuestro user actual.
+         * $rootScope.user = undefined -> No sé aún nada sobre el usuario.
+         * $rootScope.user = null -> No hay usuario ni sesión en el lado del servidor.
+         * $rootScope.user = something -> Este es nuestro usuario actual.
         */
         $rootScope.user = undefined;
+        $rootScope.sideMenu = null;
 
         $rootScope.logout = function () {
-			$http.delete('/api/users')
+			$http.delete('/api/user')
 			.then(function (obj) {
 				$rootScope.user = null;
 				$state.go('home');
@@ -121,7 +135,7 @@ app.run(['$rootScope', '$http', '$state',
 
             e.preventDefault();
 
-            $http.get('/api/users')
+            $http.get('/api/user')
             .then(function (user) {
 
                 $rootScope.user = user;
@@ -150,8 +164,8 @@ app.run(['$rootScope', '$http', '$state',
 	}
 ]);
 
-app.controller('appCtrl', ['$scope', '$http', '$state', 
-	function ($scope, $http, $state) {
+app.controller('appCtrl', ['$scope', '$state', 
+	function ($scope, $state) {
 		// DEBUG
 		window.$scope = $scope;
 		// window.$state = $state;
@@ -182,7 +196,7 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 				$scope.error = "email";
 				return false;
 			}
-			if (!password1 || password1 <1) {
+			if (!password1 || password1 < 1) {
 				$scope.error = "password1";
 				return false;
 			}
@@ -196,7 +210,7 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 
 		$scope.signUp = function (name, email, password1, password2) {
 			if (validate(name, email, password1, password2)) {
-				$http.post('/api/users/new', {
+				$http.post('/api/user/new', {
 					name: name,
 					email: email,
 					password1: password1,
@@ -224,12 +238,11 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 		}
 
 		$scope.login = function (email, password) {
-			$http.post('/api/users', {
+			$http.post('/api/user', {
 				email: email,
 				password: password
 			})
 			.then(function (user) {
-				console.log("Usuario: " + JSON.stringify(user));
 				swal({
 					title: 'Good!',
 					text: 'You logged in as ' + email,
@@ -253,20 +266,83 @@ app.controller('profileCtrl', ['$scope', '$http',
 	}
 ]);
 
-app.controller('teamsCtrl', ['$scope', '$http',
-	function ($scope, $http) {
+app.controller('teamsCtrl', ['$scope', '$http', '$state',
+	function ($scope, $http, $state) {
 		
-		$scope.teams = {};
+		window.$scope = $scope;
+		$scope.teams = null;
+		$scope.channels = null;
+		$scope.users = null;
 
 		var getTeams = function() {
 			$http.get('/api/user/teams')
-			.then(function (teams) {
-				$scope.teams = teams;
+			.then(function (data) {
+				if (data.teams.length) {
+					$scope.teams = data.teams;
+					for (i in data.teams) {
+						$rootScope.sideMenu ) = {
+							title: data.teams[i].name,
+							url: '/#/team',
+							params: data.teams[i].id
+						}
+					}
+				}
 			})
 			.catch(function (err) {
 				console.log("Error al obtener los equipos del usuario: " + err);
+			});
+		};
+
+		$scope.getTeam = function(teamID) {
+			$http.get('/api/team/' + teamID)
+			.then(function (data) {
+				if (data.channels.length)
+					$scope.channels = data.channels;
+				if (data.users.length)
+					$scope.users = data.users;
+				console.log(data);
+				$state.go('team', { data })
 			})
-		}
+			.catch(function (err) {
+				console.log("Error al obtener el equipo solicitado: " + err);
+			});
+			$state.go('team');
+		};
+
+		// var getUsers = function(teamID) {
+		// 	$http.get('/api/team/' + teamID + '/users')
+		// 	.then(function (data) {
+		// 		if (data.users.length)
+		// 			$scope.users = data.users;
+		// 		else
+		// 			$scope.users = null;
+		// 	})
+		// 	.catch(function (err) {
+		// 		console.log("Error al obtener los usuarios del equipo: " + err);
+		// 	});
+		// };
+
+		$scope.create = function(teamName) {
+			$http.post('/api/team/create', {
+				name: teamName
+			})
+			.then(function (team) {
+				swal({
+					title: 'Good!',
+					text: 'Team created successfully',
+					type: 'success',
+					confirmButton: 'Ok'
+				}, function () {
+					//$scope.team = team;
+					$state.go('teams');
+				})
+			})
+			.catch(function (err) {
+				sweetAlert("Error!", err.message, "error");
+			})
+		};
+
+		getTeams();
 	}
 ]);
 
