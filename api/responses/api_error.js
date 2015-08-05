@@ -2,8 +2,8 @@
  * API error handler.
  *
  * 0 -> Success
- * 1 -> UserCtrk error
- * 2 -> Auth error
+ * 1-2 -> UserCtrl error
+ * 3 -> Auth error
  * 1X -> Licode Room error
  * 2X -> Licode User error
  * 

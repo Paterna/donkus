@@ -4,7 +4,7 @@ bcrypt = require('bcrypt');
 
 //helper functions
 function findById (id, fn) {
-    Users
+    User
     .findOne(id)
     .exec(function (err, user) {
         if (err)
@@ -15,7 +15,7 @@ function findById (id, fn) {
 }
 
 function findByEmail(email, fn) {
-    Users
+    User
     .findOne({
         email: email
     })
@@ -71,12 +71,12 @@ passport.use(new LocalStrategy(
                             message: 'Invalid Password'
                         });
                     var returnUser = {
+                        id: user.id,
                         name: user.name,
                         email: user.email,
                         teams: user.teams,
                         createdAt: user.createdAt,
-                        updatedAt: user.updatedAt,
-                        id: user.id
+                        updatedAt: user.updatedAt
                     };
                     return done(null, returnUser, {
                         message: 'Logged in successfully'
