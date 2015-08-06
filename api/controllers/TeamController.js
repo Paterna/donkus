@@ -6,33 +6,28 @@
  */
 
 module.exports = {
-	getTeam: function(req, res) {
+c
+	/*
+	 * Permite a un usuario unirse a un equipo existente.
+	 */
+	join: function() {
+		var user = req.user;
 		var team = req.params.team;
 
 		Team.findOne({
 			id: team
 		})
-		.populate('users')
-		.populate('channels')
-		.then( res.api_ok )
-		.catch( res.api_error );
-	},
-	create: function(req, res) {
-		var user = req.user;
-		var teamName = req.body.name;
-
-		Team.create({
-			name: teamName
-		})
 		.then(function (team) {
 			team.users.add(user.id);
 			team.save( console.log );
-			res.api_ok(team);
 		})
 		.catch( res.api_error );
 
 	},
-	getUsers: function (req, res) {
+	/*
+	 * Obtiene los usuarios asociados a un equipo.
+	 */
+	getUsers: function(req, res) {
 		var team = req.params.team;
 
 		Team.findOne({

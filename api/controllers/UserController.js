@@ -49,17 +49,14 @@ module.exports = {
 	},
 	getTeams: function (req, res) {
 		var user = req.user;
-		
-		if (user) {
-			User.findOne({
-				id: user.id
-			})
-			.populate('teams')
-			.then( res.api_ok )
-			.catch( res.api_error );
-		}
-		else
-			res.api_error({ code: 2, message: "User not logged in" });
 
+		User.findOne({
+			id: user.id
+		})
+		.populate('teams')
+		.then( function (user) {
+			res.api_ok( user.teams );
+		})
+		.catch( res.api_error );
 	}
 };

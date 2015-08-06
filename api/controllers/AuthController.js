@@ -6,19 +6,15 @@ var passport = require('passport');
 
 module.exports = {
 
-  checkSession: function (req, res) {
-    if (req.user)
+  getUserSession: function (req, res) {
       return res.api_ok(req.user);
-    else
-      return res.api_error();
   },
-
   login: function (req, res) {
     passport.authenticate('local', function(err, user, info) {
       if (err)
         return res.api_error(err);
       if (!user)
-        return res.api_error({ code: 3, message: 'Wrong email or password' });
+        return res.api_error({ code: 6, message: 'Wrong email or password' });
       req.logIn(user, function(err) {
         if (err) res.send(err);
         return res.api_ok(user);
