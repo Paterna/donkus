@@ -1,0 +1,9 @@
+<li class="indigo grey lighten-4">
+	<h5>Channels</h5>
+</li>
+<li ng-show="!channels">
+	<span class="grey-text lighten-2"><small>There are not channels here</small></span>
+</li>
+<li ng-show="channels" class="bold" ng-repeat="c in channels">
+	<a class="waves-effect waves-teal" href="/">{{ c.name }}</a>
+</li>
