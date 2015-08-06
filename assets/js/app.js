@@ -9,8 +9,12 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 		$stateProvider
 			.state('home', {
 				url: '/',
-				templateUrl: 'partials/index.html',
-				controller: 'appCtrl'
+				views: {
+					'content': {
+						templateUrl: 'partials/index.html',
+						controller: 'appCtrl'
+					}
+				}
 			})
 			.state('signup', {
 				url: '/signup',
@@ -31,28 +35,46 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 			})
 			.state('profile', {
 				url: '/profile',
-				templateUrl: 'partials/profile.html',
+				views: {
+					'content': {
+						templateUrl: 'partials/profile.html',
+					}
+				},
 				controller: 'profileCtrl',
 				require: { auth: true }
 			})
 			.state('team', {
 				url: '/team',
-				templateUrl: 'partials/team.html',
+				views: {
+					'side-menu': { templateUrl: 'partials/teams/team_menu.html' },
+					'content': { templateUrl: 'partials/teams/team.html' }
+				},
 				controller: 'teamsCtrl',
 				require: { auth: true }
 			})
 			.state('teams', {
 				url: '/teams',
-				templateUrl: 'partials/teams.html',
-				controller: 'teamsCtrl',
+				views: {
+					'side-menu': {
+						templateUrl: 'partials/teams/teams_menu.html',
+						controller: 'teamsCtrl'
+					},
+					'content': {
+						templateUrl: 'partials/teams/teams.html',
+						controller: 'teamsCtrl'
+					}
+				},
 				require: { auth: true }
 			})
 			.state('teams_new', {
 				url: '/teams/new',
-				templateUrl: 'partials/teams_new.html',
+				templateUrl: 'partials/teams/teams_new.html',
 				controller: 'teamsCtrl',
 				require: { auth: true }
 			})
+			.state('channel')
+			.state('channels')
+			.state('channel_new')
 			.state('test-licode', {
 				url: '/test-licode',
 				templateUrl: 'partials/test_licode.html',
@@ -60,20 +82,23 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 				require: { auth: true }
 			});
 
+
+		
 		var transformResponse = function(response) {
 			var serverResponse = response.data;
 
 			if (serverResponse === undefined || serverResponse.code === undefined)
 				return response;
 
-			if (serverResponse.code !== 0)
+			if (serverResponse.code !== 0) {
 				throw serverResponse;
+			}
 
 			response.data = serverResponse.data;
 			return response.data;
 		}
 
-		$httpProvider.interceptors.push(function() {
+		$httpProvider.interceptors.push( function() {
 			return { response: transformResponse }
 		});
 	}
@@ -87,7 +112,6 @@ app.run(['$rootScope', '$http', '$state',
          * $rootScope.user = something -> Este es nuestro usuario actual.
         */
         $rootScope.user = undefined;
-        $rootScope.sideMenu = null;
 
         $rootScope.logout = function () {
 			$http.delete('/api/user')
@@ -277,15 +301,8 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state',
 		var getTeams = function() {
 			$http.get('/api/user/teams')
 			.then(function (data) {
-				if (data.teams.length) {
-					$scope.teams = data.teams;
-					for (i in data.teams) {
-						$rootScope.sideMenu ) = {
-							title: data.teams[i].name,
-							url: '/#/team',
-							params: data.teams[i].id
-						}
-					}
+				if (data.length) {
+					$scope.teams = data;
 				}
 			})
 			.catch(function (err) {
