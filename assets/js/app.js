@@ -82,7 +82,7 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 				require: { auth: true }
 			})
 			.state('channel', {
-				url: '/channel/:channel',
+				url: '/channel/:channel/:chTeam',
 				views: {
 					'side-menu': {
 						templateUrl: 'partials/channels/channel_menu.html',
@@ -409,14 +409,20 @@ app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
 	function ($scope, $state, $http, $stateParams) {
 		
 		window.$scope = $scope;
+		$scope.channel = null;
+		$scope.chTeam = null;
 
-		/* var init = function() {
-			if ($stateParams.channel)
+		var init = function() {
+			if ($stateParams.channel && $stateParams.chTeam)
 				getChannel($stateParams.channel);
-		} */
+		}
 
 		var getChannel = function(channelID) {
-			$http.get('/api/channel/' + channelID)
+			$scope.chTeam = $stateParams.chTeam;
+			console.log($scope.chTeam)
+			$http.get('/api/channel/' + channelID, {
+				team: $scope.chTeam
+			})
 			.then(function (data) {
 				console.log(data)
 			})
@@ -446,6 +452,8 @@ app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
 				sweetAlert("Error!", err.message, "error");
 			})
 		};
+
+		init();
 	}
 ]);
 
