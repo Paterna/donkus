@@ -10,7 +10,9 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="team in teams">
-				<td><button class="btn transparent indigo-text text-lighten-1" style="box-shadow: none" ng-click="getTeam(team.id)">{{ team.name }}</button></td>
+				<td>
+					<a class="btn transparent indigo-text text-lighten-1" style="box-shadow: none" href="/#/team/{{ team.id }}">{{ team.name }}</a>
+				</td>
 				<!-- <td>User name</td> -->
 			</tr>
 		</tbody>

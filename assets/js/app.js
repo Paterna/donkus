@@ -44,12 +44,17 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 				require: { auth: true }
 			})
 			.state('team', {
-				url: '/team',
+				url: '/team/:team',
 				views: {
-					'side-menu': { templateUrl: 'partials/teams/team_menu.html' },
-					'content': { templateUrl: 'partials/teams/team.html' }
+					'side-menu': {
+						templateUrl: 'partials/teams/team_menu.html',
+						controller: 'teamsCtrl'
+					},
+					'content': {
+						templateUrl: 'partials/teams/team.html',
+						controller: 'teamsCtrl'
+					}
 				},
-				controller: 'teamsCtrl',
 				require: { auth: true }
 			})
 			.state('teams', {
@@ -68,13 +73,38 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 			})
 			.state('teams_new', {
 				url: '/teams/new',
-				templateUrl: 'partials/teams/teams_new.html',
-				controller: 'teamsCtrl',
+				views: {
+					'content': {
+						templateUrl: 'partials/teams/teams_new.html',
+						controller: 'teamsCtrl'
+					}
+				},
 				require: { auth: true }
 			})
-			.state('channel')
-			.state('channels')
-			.state('channel_new')
+			.state('channel', {
+				url: '/channel/:channel',
+				views: {
+					'side-menu': {
+						templateUrl: 'partials/channels/channel_menu.html',
+						controller: 'channelsCtrl'
+					},
+					'content': {
+						templateUrl: 'partials/channels/channel.html',
+						controller: 'channelsCtrl'
+					}
+				},
+				require: { auth: true }
+			})
+			.state('channel_new', {
+				url: '/channels/new/:team',
+				views: {
+					'content': {
+						templateUrl: 'partials/channels/channels_new.html',
+						controller: 'channelsCtrl'
+					}
+				},
+				require: { auth: true }
+			})
 			.state('test-licode', {
 				url: '/test-licode',
 				templateUrl: 'partials/test_licode.html',
@@ -196,6 +226,12 @@ app.controller('appCtrl', ['$scope', '$state',
 	}
 ]);
 
+app.controller('profileCtrl', ['$scope', '$http',
+	function ($scope, $http) {
+
+	}
+]);
+
 app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 	function ($scope, $rootScope, $http, $state) {
 
@@ -284,46 +320,52 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
 	}
 ]);
 
-app.controller('profileCtrl', ['$scope', '$http',
-	function ($scope, $http) {
 
-	}
-]);
-
-app.controller('teamsCtrl', ['$scope', '$http', '$state',
-	function ($scope, $http, $state) {
+app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
+	function ($scope, $http, $state, $stateParams) {
 		
 		window.$scope = $scope;
 		$scope.teams = null;
+		$scope.team = null;
+		$scope.teamName = null;
 		$scope.channels = null;
 		$scope.users = null;
+
+		var init = function() {
+			getTeams();
+
+			if ($stateParams.team)
+				getTeam($stateParams.team);
+		}
 
 		var getTeams = function() {
 			$http.get('/api/user/teams')
 			.then(function (data) {
-				if (data.length) {
+				if (data.length)
 					$scope.teams = data;
-				}
 			})
 			.catch(function (err) {
 				console.log("Error al obtener los equipos del usuario: " + err);
 			});
 		};
 
-		$scope.getTeam = function(teamID) {
+		var getTeam = function(teamID) {
 			$http.get('/api/team/' + teamID)
 			.then(function (data) {
+				$scope.team = data.id;
+				$scope.teamName = data.name;
+
 				if (data.channels.length)
 					$scope.channels = data.channels;
+
 				if (data.users.length)
 					$scope.users = data.users;
-				console.log(data);
-				$state.go('team', { data })
+
+				$state.go('team');
 			})
 			.catch(function (err) {
 				console.log("Error al obtener el equipo solicitado: " + err);
 			});
-			$state.go('team');
 		};
 
 		// var getUsers = function(teamID) {
@@ -356,10 +398,54 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state',
 			})
 			.catch(function (err) {
 				sweetAlert("Error!", err.message, "error");
-			})
+			});
 		};
 
-		getTeams();
+		init();
+	}
+]);
+
+app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
+	function ($scope, $state, $http, $stateParams) {
+		
+		window.$scope = $scope;
+
+		/* var init = function() {
+			if ($stateParams.channel)
+				getChannel($stateParams.channel);
+		} */
+
+		var getChannel = function(channelID) {
+			$http.get('/api/channel/' + channelID)
+			.then(function (data) {
+				console.log(data)
+			})
+			.catch(function (err) {
+				sweetAlert("Error!", err.message, "error");
+			});
+		}
+
+		$scope.create = function(channelName) {
+
+			$http.post('/api/channel/create', {
+				name: channelName,
+				team: $stateParams.team
+			})
+			.then(function (team) {
+				swal({
+					title: 'Good!',
+					text: 'Channel created successfully',
+					type: 'success',
+					confirmButton: 'Ok'
+				}, function () {
+					//$scope.team = team;
+					$state.go('team', { team: $stateParams.team });
+				})
+			})
+			.catch(function (err) {
+				sweetAlert("Error!", err.message, "error");
+			})
+		};
 	}
 ]);
 

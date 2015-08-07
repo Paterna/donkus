@@ -11,11 +11,9 @@ module.exports = {
 	 */
 	getChannel: function(req, res) {
 		var channel = req.params.channel;
-		var team = req.params.team;
 
 		Channel.findOne({
-			id: channel,
-			team: team
+			id: channel
 		})
 		.then( res.api_ok )
 		.catch( res.api_error );
@@ -25,11 +23,11 @@ module.exports = {
 	 */
 	create: function(req, res) {
 		var user = req.user;
-		var team = req.params.team;
+		var team = req.params.team || req.body.team;
 		var channelName = req.body.name;
 
 		Channel.create({
-			name: teamName,
+			name: channelName,
 			team: team
 		})
 		.then(function (channel) {

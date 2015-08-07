@@ -34,7 +34,7 @@ module.exports = {
 	 */
 	belongsToTeam: function (req, res, next) {
 		var user = req.user;
-		var team = req.params.team;
+		var team = req.params.team || req.body.team;
 
 		User.findOne({
 			id: user.id
@@ -56,7 +56,7 @@ module.exports = {
 	 */
 	notBelongsToTeam: function (req, res, next) {
 		var user = req.user;
-		var team = req.params.team;
+		var team = req.params.team || req.body.team;
 
 		User.findOne({
 			id: user.id

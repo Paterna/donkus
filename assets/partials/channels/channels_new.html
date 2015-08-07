@@ -1,0 +1,19 @@
+<div class="row"></div>
+<div class="row">
+	<form id="new-channel-form" class="col s12 m6 offset-m2 z-depth-1">
+		<h3 class="indigo-text text-accent-2">Create channel</h3>
+		<div class="row">
+			<div class="input-field col s12">
+				<i class="material-icons prefix">device_hub</i>
+				<input ng-model="channelName" id="channel-name-field" type="text">
+				<label for="email-field">Channel name</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col s12 m8">
+				<a href="/#/team/{{ teamID }}" class="btn waves-effect waves-light indigo accent-1 right col s5 offset-s1">Cancel</a>
+				<button ng-click="create(channelName)" class="btn waves-effect waves-light indigo accent-2 right col s5 offset-s1">Create</button>
+			</div>
+		</div>
+	</form>
+</div>

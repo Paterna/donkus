@@ -1,4 +1,4 @@
-<h3>{{ team.name }}</h3>
+<h3>{{ teamName }}</h3>
 
 <div ng-show="channels">
 	<table class="col s12 m10 hoverable bordered">
@@ -10,7 +10,9 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="c in channels">
-				<td>{{ c.name }}</td>
+				<td>
+					<a class="btn transparent indigo-text text-lighten-1" style="box-shadow: none" href="/channel/{{ c.id }}">{{ c.name }}</a>
+				</td>
 				<!-- <td>User name</td> -->
 			</tr>
 		</tbody>
@@ -26,11 +28,11 @@
 	</div>
 </div>
 <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
-	<a class="btn-floating btn-large indigo accent-3" href="">
+	<a class="btn-floating btn-large indigo accent-3">
 		<i class="large material-icons">add</i>
 	</a>
  	<ul>
 		<li><a class="btn-floating red"><i class="material-icons">perm_identity</i></i></a></li>
-		<li><a class="btn-floating yellow darken-1"><i class="material-icons">device_hub</i></a></li>
+		<li><a class="btn-floating yellow darken-1" href="/#/channels/new/{{ team }}"><i class="material-icons">device_hub</i></a></li>
 	</ul>
 </div>

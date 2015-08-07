@@ -39,7 +39,8 @@ module.exports.routes = {
   'post /api/team/:team/join': ['AccessController.requireSession', 'AccessController.notBelongsToTeam', 'TeamController.join'],
 
   /* Channel API routes */
-  'get /api/channel/:channel/team/:team': ['AccessController.requireSession', 'AccessController.belongsToTeam', 'ChannelController.getChannel'],
+  'get /api/channel/:channel': ['AccessController.requireSession', 'AccessController.belongsToTeam', 'ChannelController.getChannel'],
+  'post /api/channel/create': ['AccessController.requireSession', 'AccessController.belongsToTeam', 'ChannelController.create'],
 
   /* Licode API routes */
   // Rooms

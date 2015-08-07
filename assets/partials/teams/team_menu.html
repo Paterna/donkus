@@ -5,5 +5,5 @@
 	<span class="grey-text lighten-2"><small>There are not channels here</small></span>
 </li>
 <li ng-show="channels" class="bold" ng-repeat="c in channels">
-	<a class="waves-effect waves-teal" href="/">{{ c.name }}</a>
+	<a class="waves-effect waves-teal" href="/#/channel/{{ c.id }}">{{ c.name }}</a>
 </li>

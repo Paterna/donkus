@@ -5,5 +5,5 @@
 	<span class="grey-text lighten-2"><small>There are not channels here</small></span>
 </li>
 <li ng-show="teams" class="bold" ng-repeat="team in teams">
-	<a class="waves-effect waves-teal" ng-click="getTeam(team.id)">{{ team.name }}</a>
+	<a class="waves-effect waves-teal" href="/#/team/{{ team.id }}">{{ team.name }}</a>
 </li>

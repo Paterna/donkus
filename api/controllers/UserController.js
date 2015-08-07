@@ -6,7 +6,9 @@
  */
 
 module.exports = {
-	/* Create a new user inserting it into the DB collection */
+	/*
+	 * Create a new user inserting it into the DB collection
+	 */
 	newUser: function(req, res) {
 		var name = req.body.name;
 		var email = req.body.email;
@@ -47,6 +49,9 @@ module.exports = {
 			.catch( res.api_error );
 		}
 	},
+	/*
+	 * Obtiene los equipos asociados al usuario
+	 */
 	getTeams: function (req, res) {
 		var user = req.user;
 
