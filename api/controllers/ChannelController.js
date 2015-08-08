@@ -15,7 +15,20 @@ module.exports = {
 		Channel.findOne({
 			id: channel
 		})
-		.then( res.api_ok )
+		.then( function (channel) {
+			Team.findOne({
+				id: channel.team
+			})
+			.populate('users')
+			.then( function (team) {
+				res.api_ok({
+					channel: channel,
+					team: team,
+					user: req.user
+				});
+			})
+			.catch( res.api_error );
+		})
 		.catch( res.api_error );
 	},
 	/*

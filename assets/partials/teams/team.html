@@ -11,7 +11,7 @@
 		<tbody>
 			<tr ng-repeat="c in channels">
 				<td>
-					<a class="btn transparent indigo-text text-lighten-1" style="box-shadow: none" href="/channel/{{ c.id }}/{{ team }}">#&nbsp;{{ c.name }}</a>
+					<a class="btn transparent indigo-text text-lighten-1" style="box-shadow: none" href="">#&nbsp;{{ c.name }}</a>
 				</td>
 				<!-- <td>User name</td> -->
 			</tr>
@@ -32,7 +32,7 @@
 		<i class="large material-icons">add</i>
 	</a>
  	<ul>
-		<li><a class="btn-floating red"><i class="material-icons">perm_identity</i></i></a></li>
+		<li><a class="btn-floating red" href="/#/team/{{ team }}/invite"><i class="material-icons">perm_identity</i></i></a></li>
 		<li><a class="btn-floating yellow darken-1" href="/#/channels/new/{{ team }}"><i class="material-icons">device_hub</i></a></li>
 	</ul>
 </div>
