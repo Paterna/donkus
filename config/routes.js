@@ -44,11 +44,11 @@ module.exports.routes = {
   /* Licode API routes */
   // Rooms
   'get /api/licode/get_rooms': 'LicodeController.getRooms',
+  'get /api/licode/get_current_room': 'LicodeController.getCurrentRoom',
   'get /api/licode/get_room/:room': 'LicodeController.getRoom',
   'post /api/licode/create_room': 'LicodeController.createRoom',
   'delete /api/licode/delete_room/:room': 'LicodeController.deleteRoom',
   // Users
   'post /api/licode/create_token/:room': 'LicodeController.createToken',
   'get /api/licode/get_users/:room': 'LicodeController.getUsers'
-
 };
