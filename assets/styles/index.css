@@ -1,29 +1,17 @@
 body {
-	/* background-image: url("../images/skyline.jpg"); */
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
+    padding: 0px;
+    margin: 0px;
 }
 
 #sign-up-form {
-	background: rgba(232, 234, 246, 0.8);
-	padding: 50px;
+    background: rgba(232, 234, 246, 0.8);
+    padding: 50px;
 }
 
 .error-field {
-	color: red;
-}
-/*#main-nav {
-	background: none;
-	margin-top: 40px;
-	color: #777;
-	text-transform: uppercase;
-	box-shadow: none;
+    color: red;
 }
 
-#mene-list li li:hover {
-	background: none;
+.parallax-container {
+    height: 100px;
 }
-
-#menu-list li a {
-	padding: 0px 15px;
-}*/
