@@ -26,20 +26,20 @@ module.exports.routes = {
   },
 
   /* User API routes */
-  'get /api/user': ['AccessController.requireSession', 'AuthController.getUserSession'],
-  'post /api/user': ['AccessController.requireNotSession', 'AuthController.login'],
-  'delete /api/user': ['AccessController.requireSession', 'AuthController.logout'],
-  'post /api/user/new': ['AccessController.requireNotSession', 'UserController.newUser'],
-  'get /api/user/teams': ['AccessController.requireSession', 'UserController.getTeams'],
+  'get /api/user': 'AuthController.getUserSession',
+  'post /api/user': 'AuthController.login',
+  'delete /api/user': 'AuthController.logout',
+  'post /api/user/new': 'UserController.newUser',
+  'get /api/user/teams': 'UserController.getTeams',
 
   /* Team API routes */
-  'get /api/team/:team': ['AccessController.requireSession', 'AccessController.belongsToTeam', 'TeamController.getTeam'],
-  'post /api/team/create': ['AccessController.requireSession', 'TeamController.create'],
-  'put /api/team/:team/join': ['AccessController.requireSession', /* 'AccessController.notBelongsToTeam', */ 'TeamController.join'],
+  'get /api/team/:team': 'TeamController.getTeam',
+  'post /api/team/create': 'TeamController.create',
+  'put /api/team/:team/join': 'TeamController.join',
 
   /* Channel API routes */
-  'get /api/channel/:channel': ['AccessController.requireSession', /* 'AccessController.belongsToTeam', */ 'ChannelController.getChannel'],
-  'post /api/channel/create': ['AccessController.requireSession', /* 'AccessController.belongsToTeam', */ 'ChannelController.create'],
+  'get /api/channel/:channel': 'ChannelController.getChannel',
+  'post /api/channel/create': 'ChannelController.create',
 
   /* Licode API routes */
   // Rooms

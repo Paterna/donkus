@@ -19,6 +19,27 @@
 
 module.exports.policies = {
 
+  AuthController: {
+    getUserSession: 'requireSession',
+    login: 'requireNotSession',
+    logout: 'requireSession'
+  },
+  UserController: {
+    newUser: 'requireNotSession',
+    getTeams: 'requireSession'
+  },
+  TeamController: {
+    getTeam: ['requireSession', 'belongsToTeam'],
+    create: 'requireSession',
+    join: ['requireSession', 'belongsToTeam']
+  },
+  ChannelController: {
+    getChannel: 'requireSession',
+    /* getChannel: ['requireSession', 'belongsToTeam'], */
+    create: 'requireSession'
+    /* create: ['requireSession', 'belongsToTeam'] */
+  }
+
   /***************************************************************************
   *                                                                          *
   * Default policy for all controllers and actions (`true` allows public     *
