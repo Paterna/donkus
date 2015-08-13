@@ -1,35 +1,35 @@
-<nav id="main-nav" class="indigo accent-5">
-	<div class="row">
-		<div class="col s6">
-			
-		</div>
-		<div class="col s6 offset-m6">
-				<a ng-show="!user" class="btn waves-effect waves-light indigo accent-4" href="/#/signup">
-					Sign up
-				</a>
-				<a ng-show="!user" class="btn waves-effect waves-light indigo accent-4" href="/#/login">
-					Log in
-				</a>
+<header>
+	<nav id="main-nav" class="indigo accent-5">
+		<div class="row">
+			<div class="col m4 offset-m3 hide-on-small-only">LOGO</div>
+				<div class="col s12 m5">
+					<a ng-show="!user" class="btn waves-effect waves-light indigo accent-4" href="/#/signup">
+						Sign up
+					</a>
+					<a ng-show="!user" class="btn waves-effect waves-light indigo accent-4" href="/#/login">
+						Log in
+					</a>
+				</div>
 			</div>
 		</div>
+	</nav>
+	<div ng-show="user" class="container">
+		<a href="#" data-activates="slide-out" class="button-collapse top-nav full hide-on-large-only white-text"><i class="material-icons" style="position: absolute; margin-top: -45px">dehaze</i></a>
 	</div>
-</nav>
-
+	<ul ng-show="user" id="slide-out" class="side-nav fixed grey lighten-4">
+		<li class="indigo accent-5">
+			<ul id="dropdown2" class="dropdown-content" style="z-index: 100">
+				<li><a class="btn transparent" style="box-shadow: none" href="/#/profile"><i class="material-icons left">perm_identity</i>profile</a></li>
+				<li><a class="btn transparent" style="box-shadow: none" href="/#/"><i class="material-icons left">settings</i>settings</a></li>
+				<li><a class="btn transparent" style="box-shadow: none" href="/#/teams"><i class="material-icons left">group_work</i>teams</a></li>
+				<li><a ng-click="logout()" class="btn transparent" style="box-shadow: none"><i class="material-icons left">power_settings_new</i>log out</a></li>
+			</ul>
+			<a class="btn transparent dropdown-button grey-text text-lighten-5" style="box-shadow: none" href="#!" data-activates="dropdown2"><i class="material-icons left">account_circle</i>{{ user.name }}<i class="mdi-navigation-arrow-drop-down right"></i></a>
+		</li>
+		<div ui-view="side-menu"></div>
+	</ul>
+</header>
 <div class="row">
-	<div ng-show="user" class="col s12 m4 l3">
-		<ul class="side-nav fixed grey lighten-4">
-			<li class="indigo accent-5">
-				<ul id="dropdown2" class="dropdown-content" style="z-index: 100">
-					<li><a class="btn transparent" style="box-shadow: none" href="/#/profile"><i class="material-icons left">perm_identity</i>profile</a></li>
-					<li><a class="btn transparent" style="box-shadow: none" href="/#/"><i class="material-icons left">settings</i>settings</a></li>
-					<li><a class="btn transparent" style="box-shadow: none" href="/#/teams"><i class="material-icons left">group_work</i>teams</a></li>
-					<li><a ng-click="logout()" class="btn transparent" style="box-shadow: none"><i class="material-icons left">power_settings_new</i>log out</a></li>
-				</ul>
-				<a class="btn transparent dropdown-button grey-text text-lighten-5" style="box-shadow: none" href="#!" data-activates="dropdown2"><i class="material-icons left">account_circle</i>{{ user.name }}<i class="mdi-navigation-arrow-drop-down right"></i></a>
-			</li>
-			<div ui-view="side-menu"></div>
-		</ul>	
-	</div>
 	<div class="col s12" ng-class="{'m8 l9 offset-m4 offset-l3' : user }">
 		<div ui-view="content"></div>
 	</div>
