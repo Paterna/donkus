@@ -3,13 +3,10 @@
  */
 
 module.exports = function requireSession (req, res, next) {
-	console.log("Checking session...");
 	var user = req.user;
 
-	if (user) {
-		console.log('Session checked!');
+	if (user)
 		next();
-	}
 	else
 		res.api_error({ code: 2, message: "User not logged in" });
 }
