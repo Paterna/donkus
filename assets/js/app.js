@@ -162,8 +162,9 @@ app.run(['$rootScope', '$http', '$state',
          * $rootScope.user = undefined -> No sé aún nada sobre el usuario.
          * $rootScope.user = null -> No hay usuario ni sesión en el lado del servidor.
          * $rootScope.user = something -> Este es nuestro usuario actual.
-        */
+         */
         $rootScope.user = undefined;
+        $rootScope.callInProgress = false;
 
         $rootScope.logout = function () {
             $http.delete('/api/user')
@@ -312,7 +313,7 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
                 .catch(function (err) {
                     console.log(err);
                     if (err.code == 1)
-                        sweetAlert("Oops...", "A user with email " + email + " already exist!", "error");
+                        sweetAlert("Error!", "A user with email " + email + " already exist!", "error");
                     else
                         sweetAlert("Error!", err.message, "error");
                 });
@@ -489,58 +490,48 @@ app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
 
 app.controller('licodeCtrl', ['$scope', '$state', '$http',
     function ($scope, $state, $http) {
-        var localStream;
-        var getParameterByName = function (name) {
-            name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-            var results = regex.exec(location.search);
-            return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
-        var screen = getParameterByName("screen");
-        var config = {
-            audio: true,
-            video: true,
-            data: true,
-            screen: screen,
-            videoSize: [960, 540, 960, 540]
-        };
+        window.$scope = $scope;
+        $scope.streamID = null;
+        $scope.endCall = null;
 
-        if (screen)
-            config.extensionId = "okeephmleflklcdebijnponpabbmmgeo";
+        var startCall = function (response) {
+            var localStream;
+            var screen = getParameterByName("screen");
 
-        localStream = Erizo.Stream(config);
+            var config = {
+                audio: true,
+                video: true,
+                data: true,
+                screen: screen,
+                videoSize: [960, 540, 960, 540]
+            };
 
+            if (screen)
+                config.extensionId = "okeephmleflklcdebijnponpabbmmgeo";
 
-        var createToken = function(role, cb) {
-            console.log("Getting current room...");
-            $http.get('/api/licode/get_current_room')
-            .then(function (room) {
-                console.log("Using room ", room);
-                console.log("Creating token...");
-                $http.post('/api/licode/create_token/' + room, {
-                    role: role
-                })
-                .then( cb )
-                .catch(function (err) {
-                    sweetAlert("Error!", err.message, "error");
-                });
-            })
-            .catch(function (err) {
-                sweetAlert("Error!", err.message, "error");
-            });
-        }
+            localStream = Erizo.Stream(config);
 
-        createToken('presenter', function (response) {
             var token = response;
-            console.log(token);
-
             room = Erizo.Room({token: token});
-
             localStream.addEventListener("access-accepted", function () {
-                console.log("Access accepted");
+                var stream;
+
+                $scope.endCall = function () {
+                    room.unsubscribe(stream, function (obj) {
+                        console.log("Unsubscribed:", obj);
+                    });
+                    room.unpublish(localStream, function (result, err) {
+                        if (result === undefined)
+                            console.log("Error unpublishing: ", err);
+                        else
+                            console.log("Stream unpublished!");
+                        console.log("Stream unpublished:", result)
+                    });
+                    room.disconnect();
+                }
                 var subscribeToStreams = function(streams) {
                     for (var i in streams) {
-                        var stream = streams[i];
+                        stream = streams[i];
                         room.subscribe(stream);
                     }
                 }
@@ -550,29 +541,32 @@ app.controller('licodeCtrl', ['$scope', '$state', '$http',
                 });
 
                 room.addEventListener("stream-subscribed", function(streamEvent) {
-                    var stream = streamEvent.stream;
-                    var div = document.createElement('div');
-                    div.setAttribute("style", "width: 960px; height: 540px;");
-                    div.setAttribute("id", "test" + stream.getID());
-
-                    document.body.appendChild(div);
-                    stream.show("test" + stream.getID());
+                    stream = streamEvent.stream;
+                    console.log('Streams:', stream);
+                    $scope.streamID = stream.getID();
+                    stream.show("subscribed");
                 });
 
                 room.addEventListener("stream-added", function (streamEvent) {
                     var streams = [];
                     streams.push(streamEvent.stream);
                     subscribeToStreams(streams);
-                    document.getElementById("recordButton").disabled = false;
                 });
 
                 room.addEventListener("stream-removed", function (streamEvent) {
                     // Remove stream from DOM
-                    var stream = streamEvent.stream;
-                    if (stream.elementID !== undefined) {
-                        var element = document.getElementById(stream.elementID);
-                        document.body.removeChild(element);
-                    }
+                    // $http.delete('/api/licode/room/' + room.roomID + '/delete')
+                    // .then(function (obj) {
+                    //     console.log("Room deleted:", obj)
+                    // })
+                    // .catch(function (err) {
+                    //     console.error("Error:", err);
+                    // });
+                    // stream = streamEvent.stream;
+                    // if (stream.elementID !== undefined) {
+                    //     // $('video-pull').remove($('subscribed' + stream.elementID));
+                    //     // $('video-pull').remove($('video'));
+                    // }
                 });
 
                 room.addEventListener("stream-failed", function (streamEvent){
@@ -585,6 +579,42 @@ app.controller('licodeCtrl', ['$scope', '$state', '$http',
                 localStream.show("video");
             });
             localStream.init();
-        });
+        }
+
+        // var joinCall = function (response) {
+
+        // }
+
+        var getParameterByName = function (name) {
+            name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+            var results = regex.exec(location.search);
+            return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        var createToken = function(room, role, cb) {
+            $http.post('/api/licode/token/create/' + room, {
+                role: role
+            })
+            .then(cb)
+            .catch(function (err) {
+                sweetAlert("Error!", err.message, "error");
+            });
+        }
+
+        var init = function () {
+            $http.get('/api/licode/room/current')
+            .then(function (room) {
+                var cb = startCall;
+                var role = 'presenter';
+                createToken(room, role, cb);
+
+            })
+            .catch(function (err) {
+                console.error(err);
+            });
+        }
+
+        init();
     }
 ]);

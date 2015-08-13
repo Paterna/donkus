@@ -1,3 +1,14 @@
-<div class="row">
-	<div id="video" class="col s12 m6 offset-m2 z-depth-1"></div>
+<style type="text/css">
+	body {
+		background-color: #444;
+	}
+</style>
+<div class="row" id="video-pull">
+	<div id="subscribed{{ streamID }}" class="col s12 z-depth-1" style="margin-top: 30px; height: 450px; width: 800px; padding: 0px"></div>
+	<div class="fixed-action-btn" style="bottom: 35px; right: 24px;">
+		<div id="video" class="z-depth-1" style="height: 72px; width: 128px;"></div>
+	</div>
+	<div class="fixed-action-btn" style="bottom: 35px; right: 200px;">
+		<a ng-click="endCall()" class="btn btn-large waves-effect waves-light red"><i class="material-icons">call_end</i></a> 
+	</div>
 </div>

@@ -4,6 +4,6 @@
 
 <li ng-show="data" class="bold" ng-repeat="u in users">
 	<a ng-if="currentUser.id == u.id" class="waves-effect waves-teal" href="">You</a>
-	<a ng-if="currentUser.id != u.id" class="waves-effect waves-teal" href="">#&nbsp;{{ u.name }}</a>
+	<a ng-if="currentUser.id != u.id" class="waves-effect waves-teal" href="">@{{ u.name }}</a>
 	<!-- <a class="waves-effect waves-teal" ng-click="getChannel(c.id)">#&nbsp;{{ c.name }}</a> -->
 </li>
