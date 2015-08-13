@@ -488,8 +488,8 @@ app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
     }
 ]);
 
-app.controller('licodeCtrl', ['$scope', '$state', '$http',
-    function ($scope, $state, $http) {
+app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
+    function ($scope, $state, $stateParams, $http) {
         window.$scope = $scope;
         $scope.streamID = null;
         $scope.endCall = null;
@@ -517,17 +517,33 @@ app.controller('licodeCtrl', ['$scope', '$state', '$http',
                 var stream;
 
                 $scope.endCall = function () {
-                    room.unsubscribe(stream, function (obj) {
-                        console.log("Unsubscribed:", obj);
+                    swal({
+                        title: "End call?",
+                        text: "",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes",
+                        cancelButtonText: "No",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            room.unsubscribe(stream, function (obj) {
+                                console.log("Unsubscribed:", obj);
+                            });
+                            room.unpublish(localStream, function (result, err) {
+                                if (result === undefined)
+                                    console.log("Error unpublishing: ", err);
+                                else
+                                    console.log("Stream unpublished!");
+                                console.log("Stream unpublished:", result)
+                            });
+                            localStream.close();
+                            room.disconnect();
+                            $state.go('channel', { channel: $stateParams.channel });
+                        }
                     });
-                    room.unpublish(localStream, function (result, err) {
-                        if (result === undefined)
-                            console.log("Error unpublishing: ", err);
-                        else
-                            console.log("Stream unpublished!");
-                        console.log("Stream unpublished:", result)
-                    });
-                    room.disconnect();
                 }
                 var subscribeToStreams = function(streams) {
                     for (var i in streams) {
