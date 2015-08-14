@@ -4,11 +4,17 @@
 	}
 </style>
 <div class="row" id="video-pull">
-	<div id="subscribed{{ streamID }}" class="col s12 z-depth-1" style="margin-top: 30px; height: 450px; width: 800px; padding: 0px"></div>
+	<div id="subscribed" class="col s12 z-depth-1" style="margin-top: 30px; height: 450px; width: 800px; padding: 0px"></div>
 	<div class="fixed-action-btn" style="bottom: 35px; right: 24px;">
 		<div id="video" class="z-depth-1" style="height: 72px; width: 128px;"></div>
 	</div>
-	<div class="fixed-action-btn" style="bottom: 35px; right: 200px;">
+	<div class="fixed-action-btn" style="bottom: 140px; right: 24px;">
 		<a ng-click="endCall()" class="btn btn-large waves-effect waves-light red"><i class="material-icons">call_end</i></a> 
+	</div>
+	<div ng-show="!isRecording" class="fixed-action-btn" style="bottom: 200px; right: 24px;">
+		<a ng-click="record()" class="btn btn-large waves-effect waves-light grey red-text"><i class="material-icons">lens</i></a> 
+	</div>
+	<div ng-show="isRecording" class="fixed-action-btn" style="bottom: 200px; right: 24px;">
+		<a ng-click="stopRecord()" class="btn btn-large waves-effect waves-light grey red-text"><i class="material-icons">stop</i></a> 
 	</div>
 </div>

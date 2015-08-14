@@ -41,6 +41,10 @@ module.exports.routes = {
   'get /api/channel/:channel': 'ChannelController.getChannel',
   'post /api/channel/create': 'ChannelController.create',
 
+  /* Message API routes */
+  'get /api/messages/:channel': 'MessageController.getMessages',
+  'post /api/message/push/:channel': 'MessageController.push',
+
   /* Licode API routes */
   // Rooms
   'get /api/licode/get_rooms': 'LicodeController.getRooms',

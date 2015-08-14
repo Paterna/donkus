@@ -433,19 +433,97 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
     }
 ]);
 
-app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
-    function ($scope, $state, $http, $stateParams) {
+app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$stateParams',
+    function ($rootScope, $scope, $state, $http, $stateParams) {
         
         window.$scope = $scope;
         $scope.data = null;
         $scope.channel = null;
         $scope.team = null;
         $scope.users = null;
-        $scope.currentUser = null;
+        $scope.msgHistory = [];
 
         var init = function() {
-            if ($stateParams.channel)
-                getChannel($stateParams.channel);
+            getChannel($stateParams.channel);
+
+            $http.get('/api/licode/room/current')
+            .then(function (room) {
+                createToken(room, 'presenter', function (response) {
+                    var localStream = Erizo.Stream({ audio: false, video: false, data: true });
+
+                    var token = response;
+                    room = Erizo.Room({ token: token });
+
+                    localStream.addEventListener("access-accepted", function () {
+                        var stream;
+
+                        var subscribeToStreams = function(streams) {
+                            for (var i in streams) {
+                                room.subscribe(streams[i]);
+                            }
+                        }
+
+                        room.addEventListener("room-connected", function (roomEvent) {
+                            room.publish(localStream);
+                            subscribeToStreams(roomEvent.streams);
+                        });
+
+                        room.addEventListener("stream-subscribed", function (streamEvent) {
+                            stream = streamEvent.stream;
+                            stream.addEventListener("stream-data", function (streamEvent) {
+                                $scope.msgHistory.push({
+                                    author: streamEvent.msg.author,
+                                    data: streamEvent.msg.text,
+                                    createdAt: streamEvent.msg.timestamp.substring(11, 19)
+                                });
+                            });
+                        });
+                        
+                        room.addEventListener("stream-attributes-update", function (streamEvent) {
+                            stream = streamEvent.stream;
+                        });
+
+                        room.addEventListener("stream-added", function (streamEvent) {
+                            var streams = [];
+                            streams.push(streamEvent.stream);
+                            subscribeToStreams(streams);
+                        });
+
+                        $scope.sendMsg = function (msg) {
+                            if (msg && msg.length) {
+                                $http.post('/api/message/push/' + $stateParams.channel, {
+                                    data: msg
+                                })
+                                .then(function (message) {
+                                    localStream.sendData({
+                                        text: msg,
+                                        timestamp: new Date(),
+                                        author: $rootScope.user.name
+                                    });
+                                    $scope.chatMsg = null;
+                                })
+                                .catch(function (err) {
+                                    sweetAlert("Error!", err.message, "error");
+                                });
+                            }
+                        }
+
+                        $scope.videocall = function(channelID) {
+                            room.unpublish(localStream);
+                            localStream.close();
+                            room.disconnect();
+                            $state.go('videocall', { channel: channelID });
+                        }
+                        room.connect();
+                    });
+
+                    localStream.init();
+                });
+
+            })
+            .catch(function (err) {
+                console.error(err);
+            });
         }
 
         var getChannel = function(channelID) {
@@ -455,8 +533,17 @@ app.controller('channelsCtrl', ['$scope', '$state', '$http', '$stateParams',
                 $scope.channel = data.channel;
                 $scope.team = data.team;
                 $scope.users = data.team.users;
-                $scope.currentUser = data.user;
             })
+            .catch(function (err) {
+                sweetAlert("Error!", err.message, "error");
+            });
+        }
+        
+        var createToken = function(room, role, cb) {
+            $http.post('/api/licode/token/create/' + room, {
+                role: role
+            })
+            .then(cb)
             .catch(function (err) {
                 sweetAlert("Error!", err.message, "error");
             });
@@ -493,6 +580,10 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         window.$scope = $scope;
         $scope.streamID = null;
         $scope.endCall = null;
+        $scope.isRecording = false;
+        $scope.record = null;
+        $scope.stopRecord = null;
+        $scope.recordID = null;
 
         var startCall = function (response) {
             var localStream;
@@ -502,8 +593,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                 audio: true,
                 video: true,
                 data: true,
-                screen: screen,
-                videoSize: [960, 540, 960, 540]
+                screen: screen
             };
 
             if (screen)
@@ -519,7 +609,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                 $scope.endCall = function () {
                     swal({
                         title: "End call?",
-                        text: "",
                         type: "warning",
                         showCancelButton: true,
                         confirmButtonColor: "#DD6B55",
@@ -545,6 +634,30 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                         }
                     });
                 }
+
+                $scope.record = function () {
+                    room.startRecording(stream, function (recordingId, error) {
+                        if (recordingId === undefined)
+                            sweetAlert("Error!", error, "error");
+                        else {
+                            $scope.recordID = recordingId;
+                            $scope.isRecording = true;
+                            console.log("Recording started, the id of the recording is ", recordingId);
+                        }
+                    });
+                }
+
+                $scope.stopRecord = function () {
+                    room.stopRecording($scope.recordID, function (result, error) {
+                        if (result === undefined)
+                            sweetAlert("Error!", error, "error");
+                        else {
+                            $scope.isRecording = false;
+                            console.log("Stopped recording!");
+                        }
+                    });
+                }
+
                 var subscribeToStreams = function(streams) {
                     for (var i in streams) {
                         stream = streams[i];
