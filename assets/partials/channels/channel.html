@@ -1,11 +1,12 @@
 <div class="row">
-	<div class="col s9" style="height: 60vh; overflow: auto;">
-		<table>
+	<div class="col s9" style="height: 60vh; overflow: auto; padding-top: 30px;">
+		<span class="grey-text" style="padding-bottom: 50px; border-bottom: 1px solid #ddd">This is the beginning of the channel <b>#{{ channel.name }}</b> in team <b>{{ team.name }}</b>. Created on <b>{{ channelCreatedAt }}</b>.</span>
+		<table style="margin-top: 50px;">
 			<tbody>
 				<tr ng-repeat="msg in msgHistory">
-					<td width="15%"><b>{{ msg.author }}</b></td>
-					<td width="70%">{{ msg.data }}</td>
-					<td width="15%" class="grey-text"><small>{{ msg.createdAt }}</small></td>
+					<td width="20%" ng-if="user.id == u.id"><b>You</b><br><small class="grey-text">{{ msg.createdAt }}</small></td>
+					<td width="20%" ng-if="user.id != u.id"><b>{{ msg.author }}</b><br><small class="grey-text">{{ msg.createdAt }}</small></td>
+					<td width="80%">{{ msg.data }}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -16,7 +17,7 @@
 		<div class="row">
 			<div class="input-field col s10">
 				<label for="chat">Type a message...</label>
-				<textarea id="chat" class="materialize-textarea" ng-model="chatMsg"></textarea>
+				<textarea id="chat" class="materialize-textarea" ng-model="chatMsg" ng-enter="sendMsg(chatMsg)"></textarea>
 			</div>
 			<div class="col s2">
 				<button type="submit" ng-click="sendMsg(chatMsg)" class="btn transparent indigo-text" style="box-shadow: none; margin-top: 60px"><i class="large material-icons">send</i></button>

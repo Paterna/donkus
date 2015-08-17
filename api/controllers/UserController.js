@@ -45,10 +45,22 @@ module.exports = {
 					password: password1
 				})	
 			})
-			.then( res.api_ok )
-			.catch( res.api_error );
+			.then(res.api_ok)
+			.catch(res.api_error);
 		}
 	},
+	/*
+	 * Obtiene el usuario solicitado
+	 */
+	 getUser: function (req, res) {
+	 	var userid = req.params.user;
+
+	 	User.findOne({
+	 		id: userid
+	 	})
+	 	.then(res.api_ok)
+	 	.catch(res.api_error);
+	 },
 	/*
 	 * Obtiene los equipos asociados al usuario
 	 */
@@ -59,9 +71,9 @@ module.exports = {
 			id: user.id
 		})
 		.populate('teams')
-		.then( function (user) {
-			res.api_ok( user.teams );
+		.then(function (user) {
+			res.api_ok(user.teams);
 		})
-		.catch( res.api_error );
+		.catch(res.api_error);
 	}
 };

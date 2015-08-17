@@ -13,6 +13,9 @@ module.exports = {
 			required: true,
 			unique: true
 		},
+		purpose: {
+			type: 'string'
+		},
 		team: {
 			model: 'team'
 		}

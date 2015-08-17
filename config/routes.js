@@ -29,8 +29,9 @@ module.exports.routes = {
   'get /api/user': 'AuthController.getUserSession',
   'post /api/user': 'AuthController.login',
   'delete /api/user': 'AuthController.logout',
-  'post /api/user/new': 'UserController.newUser',
   'get /api/user/teams': 'UserController.getTeams',
+  'get /api/user/:user': 'UserController.getUser',
+  'post /api/user/new': 'UserController.newUser',
 
   /* Team API routes */
   'get /api/team/:team': 'TeamController.getTeam',

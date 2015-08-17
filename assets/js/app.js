@@ -104,11 +104,13 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 views: {
                     'side-menu': {
                         templateUrl: 'partials/channels/channel_menu.html',
-                        controller: 'channelsCtrl'
+                        controller: 'chMenuCtrl',
+                        chat: false
                     },
                     'content': {
                         templateUrl: 'partials/channels/channel.html',
-                        controller: 'channelsCtrl'
+                        controller: 'channelsCtrl',
+                        chat: true
                     }
                 },
                 require: { auth: true }
@@ -439,91 +441,117 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         window.$scope = $scope;
         $scope.data = null;
         $scope.channel = null;
+        $scope.channelCreatedAt = null;
         $scope.team = null;
         $scope.users = null;
         $scope.msgHistory = [];
 
         var init = function() {
-            getChannel($stateParams.channel);
 
-            $http.get('/api/licode/room/current')
-            .then(function (room) {
-                createToken(room, 'presenter', function (response) {
-                    var localStream = Erizo.Stream({ audio: false, video: false, data: true });
+            console.log($state);
+            if ($stateParams.channel) {
+                getChannel($stateParams.channel);
+                $http.get('/api/licode/room/current')
+                .then(function (room) {
+                    createToken(room, 'presenter', function (response) {
+                        var localStream = Erizo.Stream({ audio: false, video: false, data: true });
 
-                    var token = response;
-                    room = Erizo.Room({ token: token });
+                        var token = response;
+                        room = Erizo.Room({ token: token });
 
-                    localStream.addEventListener("access-accepted", function () {
-                        var stream;
+                        localStream.addEventListener("access-accepted", function () {
+                            var stream;
 
-                        var subscribeToStreams = function(streams) {
-                            for (var i in streams) {
-                                room.subscribe(streams[i]);
+                            var subscribeToStreams = function(streams) {
+                                for (var i in streams) {
+                                    room.subscribe(streams[i]);
+                                }
                             }
-                        }
+                            
+                            room.addEventListener("room-connected", function (roomEvent) {
+                                room.publish(localStream);
+                                subscribeToStreams(roomEvent.streams);
+                            });
 
-                        room.addEventListener("room-connected", function (roomEvent) {
-                            room.publish(localStream);
-                            subscribeToStreams(roomEvent.streams);
-                        });
-
-                        room.addEventListener("stream-subscribed", function (streamEvent) {
-                            stream = streamEvent.stream;
-                            stream.addEventListener("stream-data", function (streamEvent) {
-                                $scope.msgHistory.push({
-                                    author: streamEvent.msg.author,
-                                    data: streamEvent.msg.text,
-                                    createdAt: streamEvent.msg.timestamp.substring(11, 19)
+                            room.addEventListener("stream-subscribed", function (streamEvent) {
+                                stream = streamEvent.stream;
+                                stream.addEventListener("stream-data", function (streamEvent) {
+                                    $scope.msgHistory.push({
+                                        author: streamEvent.msg.author,
+                                        data: streamEvent.msg.text,
+                                        createdAt: streamEvent.msg.timestamp.substring(11, 19)
+                                    });
                                 });
                             });
-                        });
-                        
-                        room.addEventListener("stream-attributes-update", function (streamEvent) {
-                            stream = streamEvent.stream;
-                        });
+                            
+                            room.addEventListener("stream-attributes-update", function (streamEvent) {
+                                stream = streamEvent.stream;
+                            });
 
-                        room.addEventListener("stream-added", function (streamEvent) {
-                            var streams = [];
-                            streams.push(streamEvent.stream);
-                            subscribeToStreams(streams);
-                        });
+                            room.addEventListener("stream-added", function (streamEvent) {
+                                var streams = [];
+                                streams.push(streamEvent.stream);
+                                subscribeToStreams(streams);
+                            });
 
-                        $scope.sendMsg = function (msg) {
-                            if (msg && msg.length) {
-                                $http.post('/api/message/push/' + $stateParams.channel, {
-                                    data: msg
-                                })
-                                .then(function (message) {
-                                    localStream.sendData({
-                                        text: msg,
-                                        timestamp: new Date(),
-                                        author: $rootScope.user.name
+                            $scope.sendMsg = function (msg) {
+                                if (msg && msg.length) {
+                                    $http.post('/api/message/push/' + $stateParams.channel, {
+                                        data: msg
+                                    })
+                                    .then(function (message) {
+                                        localStream.sendData({
+                                            text: msg,
+                                            timestamp: new Date(),
+                                            author: $rootScope.user.name
+                                        });
+                                        $scope.chatMsg = null;
+                                    })
+                                    .catch(function (err) {
+                                        sweetAlert("Error!", err.message, "error");
                                     });
-                                    $scope.chatMsg = null;
-                                })
-                                .catch(function (err) {
-                                    sweetAlert("Error!", err.message, "error");
-                                });
+                                }
                             }
-                        }
 
-                        $scope.videocall = function(channelID) {
-                            room.unpublish(localStream);
-                            localStream.close();
-                            room.disconnect();
-                            $state.go('videocall', { channel: channelID });
-                        }
-                        room.connect();
+                            $scope.videocall = function(channelID) {
+                                room.unpublish(localStream);
+                                localStream.close();
+                                room.disconnect();
+                                $state.go('videocall', { channel: channelID });
+                            }
+                            room.connect();
+                        });
+
+                        localStream.init();
                     });
 
-                    localStream.init();
+                })
+                .catch(function (err) {
+                    console.error(err);
                 });
+            }
 
-            })
-            .catch(function (err) {
-                console.error(err);
-            });
+        }
+
+        var dateTransform = function(date) {
+            
+            var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+
+            var dateFormat = new Date(date);
+            var day = dateFormat.getDate();
+            var month = dateFormat.getMonth();
+            var year = dateFormat.getFullYear();
+            var suffix = '';
+
+            switch (day) {
+                case 1: suffix = 'st';
+                case 2: suffix = 'nd';
+                case 3: suffix = 'rd';
+                default: suffix = 'th';
+            }
+
+            return months[month] + ' ' + day + suffix + ', ' + year;
         }
 
         var getChannel = function(channelID) {
@@ -531,8 +559,25 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
             .then(function (data) {
                 $scope.data = data;
                 $scope.channel = data.channel;
+                $scope.channelCreatedAt = dateTransform(data.channel.createdAt);
                 $scope.team = data.team;
                 $scope.users = data.team.users;
+                $http.get('/api/messages/' + channelID)
+                .then(function (messages) {
+                    messages.forEach(function (msg) {
+                        $http.get('/api/user/' + msg.author)
+                        .then(function (author) {
+                            $scope.msgHistory.push({
+                                author: author.name,
+                                data: msg.data,
+                                createdAt: msg.createdAt.substring(11, 19)
+                            });
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    sweetAlert("Error!", err.message, "error");
+                });
             })
             .catch(function (err) {
                 sweetAlert("Error!", err.message, "error");
@@ -572,6 +617,25 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         };
 
         init();
+    }
+]);
+
+app.controller('chMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
+    function ($scope, $state, $stateParams, $http) {
+        $scope.data = null;
+        $scope.users = null;
+
+        var getChannel = function(channelID) {
+            $http.get('/api/channel/' + channelID)
+            .then(function (data) {
+                $scope.data = data;
+                $scope.users = data.team.users;
+            })
+            .catch(function (err) {
+                sweetAlert("Error!", err.message, "error");
+            });
+        }
+        getChannel($stateParams.channel);
     }
 ]);
 
@@ -747,3 +811,17 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         init();
     }
 ]);
+
+app.directive('ngEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngEnter);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+});

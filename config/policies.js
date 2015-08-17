@@ -26,6 +26,7 @@ module.exports.policies = {
   },
   UserController: {
     newUser: 'requireNotSession',
+    getUser: 'requireSession',
     getTeams: 'requireSession'
   },
   TeamController: {
