@@ -2,7 +2,7 @@
 	<h5>Teams</h5>
 </li>
 <li ng-show="!teams">
-	<span class="grey-text lighten-2"><small>There are not channels here</small></span>
+	<span class="grey-text lighten-2"><small>There are not teams here</small></span>
 </li>
 <li ng-show="teams" class="bold" ng-repeat="team in teams">
 	<a class="waves-effect waves-teal" href="/#/team/{{ team.id }}">{{ team.name }}</a>

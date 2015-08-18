@@ -9,9 +9,10 @@
 	<!-- <a class="waves-effect waves-teal" ng-click="getChannel(c.id)">#&nbsp;{{ c.name }}</a> -->
 </li>
 
-<li class="indigo grey lighten-4">
+<li ng-show="users && channels" class="indigo grey lighten-4">
 	<h5>Team members</h5>
 </li>
-<li class="members" ng-show="users" ng-repeat="u in users">
+<li class="members" ng-show="users && channels" ng-repeat="u in users">
+	<span ng-show="users.length == 1" class="grey-text lighten-2"><small>No more users apart from you</small></span>
 	<span ng-if="user.id != u.id">@{{ u.name }}</span>
 </li>
