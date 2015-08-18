@@ -55,8 +55,8 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 url: '/team/:team',
                 views: {
                     'side-menu': {
-                        templateUrl: 'partials/teams/team_menu.html',
-                        controller: 'teamsCtrl'
+                        templateUrl: 'partials/side_menu.html',
+                        controller: 'sideMenuCtrl'
                     },
                     'content': {
                         templateUrl: 'partials/teams/team.html',
@@ -103,14 +103,12 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 url: '/channel/:channel',
                 views: {
                     'side-menu': {
-                        templateUrl: 'partials/channels/channel_menu.html',
-                        controller: 'chMenuCtrl',
-                        chat: false
+                        templateUrl: 'partials/side_menu.html',
+                        controller: 'sideMenuCtrl'
                     },
                     'content': {
                         templateUrl: 'partials/channels/channel.html',
-                        controller: 'channelsCtrl',
-                        chat: true
+                        controller: 'channelsCtrl'
                     }
                 },
                 require: { auth: true }
@@ -443,12 +441,12 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         $scope.channel = null;
         $scope.channelCreatedAt = null;
         $scope.team = null;
+        $scope.teamName = null;
         $scope.users = null;
         $scope.msgHistory = [];
 
         var init = function() {
 
-            console.log($state);
             if ($stateParams.channel) {
                 getChannel($stateParams.channel);
                 $http.get('/api/licode/room/current')
@@ -479,8 +477,10 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                     $scope.msgHistory.push({
                                         author: streamEvent.msg.author,
                                         data: streamEvent.msg.text,
-                                        createdAt: streamEvent.msg.timestamp.substring(11, 19)
+                                        createdAt: moment(streamEvent.msg.timestamp).format("HH:mm:ss")
                                     });
+                                    $scope.$apply();
+                                    document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                                 });
                             });
                             
@@ -521,8 +521,8 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             }
                             room.connect();
                         });
-
                         localStream.init();
+                        document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                     });
 
                 })
@@ -533,34 +533,14 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
 
         }
 
-        var dateTransform = function(date) {
-            
-            var months = ['January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'];
-
-            var dateFormat = new Date(date);
-            var day = dateFormat.getDate();
-            var month = dateFormat.getMonth();
-            var year = dateFormat.getFullYear();
-            var suffix = '';
-
-            switch (day) {
-                case 1: suffix = 'st';
-                case 2: suffix = 'nd';
-                case 3: suffix = 'rd';
-                default: suffix = 'th';
-            }
-
-            return months[month] + ' ' + day + suffix + ', ' + year;
-        }
-
         var getChannel = function(channelID) {
             $http.get('/api/channel/' + channelID)
             .then(function (data) {
                 $scope.data = data;
                 $scope.channel = data.channel;
-                $scope.channelCreatedAt = dateTransform(data.channel.createdAt);
+                $scope.channelCreatedAt = moment(data.channel.createdAt).format("Do MMMM, YYYY");
                 $scope.team = data.team;
+                $scope.teamName = data.team.name;
                 $scope.users = data.team.users;
                 $http.get('/api/messages/' + channelID)
                 .then(function (messages) {
@@ -570,7 +550,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             $scope.msgHistory.push({
                                 author: author.name,
                                 data: msg.data,
-                                createdAt: msg.createdAt.substring(11, 19)
+                                createdAt: moment(msg.createdAt).format('HH:mm:ss')
                             });
                         });
                     });
@@ -620,22 +600,61 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
     }
 ]);
 
-app.controller('chMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
+app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
     function ($scope, $state, $stateParams, $http) {
-        $scope.data = null;
         $scope.users = null;
+        $scope.team = null;
+        $scope.teamName = null;
+        $scope.channel = null;
+        $scope.channels = null;
+
+        var init = function() {
+            if ($stateParams.team) {
+                getTeam($stateParams.team);
+            }
+            if ($stateParams.channel) {
+                getChannel($stateParams.channel);
+            }
+        }
+
+        var getTeam = function(teamID) {
+            $http.get('/api/team/' + teamID)
+            .then(function (data) {
+                $scope.teamName = data.name;
+
+                if (data.channels.length)
+                    $scope.channels = data.channels;
+
+                if (data.users.length)
+                    $scope.users = data.users;
+
+                //$state.go('team');
+            })
+            .catch(function (err) {
+                console.log("Error al obtener el equipo solicitado: " + err);
+            });
+        };
 
         var getChannel = function(channelID) {
             $http.get('/api/channel/' + channelID)
             .then(function (data) {
-                $scope.data = data;
+                $scope.channel = data.channel;
+                $scope.team = data.team;
                 $scope.users = data.team.users;
+                $http.get('/api/team/' + data.team.id)
+                .then(function (data) {
+                    $scope.channels = data.channels;
+                    console.log(data.channels)
+                })
+                .catch(function (err) {
+                    sweetAlert("Error!", err.message, "error");
+                });
             })
             .catch(function (err) {
                 sweetAlert("Error!", err.message, "error");
             });
         }
-        getChannel($stateParams.channel);
+        init();
     }
 ]);
 
@@ -735,7 +754,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 
                 room.addEventListener("stream-subscribed", function(streamEvent) {
                     stream = streamEvent.stream;
-                    console.log('Streams:', stream);
                     $scope.streamID = stream.getID();
                     stream.show("subscribed");
                 });

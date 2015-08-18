@@ -23,8 +23,7 @@ module.exports = {
 			.then( function (team) {
 				res.api_ok({
 					channel: channel,
-					team: team,
-					user: req.user
+					team: team
 				});
 			})
 			.catch( res.api_error );

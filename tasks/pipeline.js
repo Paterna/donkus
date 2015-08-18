@@ -24,11 +24,22 @@ var cssFilesToInject = [
 var jsFilesToInject = [
   
   // Load sails.io before everything else
-  'js/dependencies/sails.io.js',
+  // 'js/dependencies/sails.io.js',
 
   // Load Angular.js before UI-Router
   'js/dependencies/angular.min.js',
   'js/dependencies/angular-ui-router.min.js',
+  '/js/dependencies/angular.min.js',
+  '/js/dependencies/angular-ui-router.min.js',
+  '/js/dependencies/angular-cookies.min.js',
+  '/js/dependencies/erizo.min.js',
+  '/js/dependencies/jquery-2.1.4.min.js',
+  '/js/dependencies/sweetalert.min.js',
+  '/js/dependencies/materialize.min.js',
+  '/js/dependencies/moment.min.js',
+  '/js/dependencies/moment-locales.min.js',
+  '/js/dependencies/moment-timezone.min.js',
+  '/js/app.js',
 
   // Dependencies like jQuery, or Angular are brought in here
   'js/dependencies/**/*.js',

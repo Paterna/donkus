@@ -30,15 +30,26 @@ module.exports.policies = {
     getTeams: 'requireSession'
   },
   TeamController: {
-    getTeam: ['requireSession', 'belongsToTeam'],
+    getTeam: 'requireSession',
+    /* getTeam: ['requireSession', 'belongsToTeam'], */
     create: 'requireSession',
-    join: ['requireSession', 'belongsToTeam']
+    join: 'requireSession',
+    /* join: ['requireSession', 'belongsToTeam'] */
   },
   ChannelController: {
     getChannel: 'requireSession',
     /* getChannel: ['requireSession', 'belongsToTeam'], */
     create: 'requireSession'
     /* create: ['requireSession', 'belongsToTeam'] */
+  },
+  LicodeController: {
+    getCurrentRoom: 'requireSession',
+    getRooms: 'requireSession',
+    getRoom: 'requireSession',
+    createRoom: 'requireSession',
+    deleteRoom: 'requireSession',
+    createToken: 'requireSession',
+    getUsers: 'requireSession'
   }
 
   /***************************************************************************

@@ -1,7 +1,9 @@
-<div class="row">
-	<div class="col s9" style="height: 60vh; overflow: auto; padding-top: 30px;">
-		<span class="grey-text" style="padding-bottom: 50px; border-bottom: 1px solid #ddd">This is the beginning of the channel <b>#{{ channel.name }}</b> in team <b>{{ team.name }}</b>. Created on <b>{{ channelCreatedAt }}</b>.</span>
-		<table style="margin-top: 50px;">
+<div class="row" style="margin: 0">
+	<div id="board" class="col s9" style="height: 60vh; overflow: auto; margin-top: 30px;">
+		<div class="grey-text" style="padding-bottom: 30px; border-bottom: 1px solid #ddd">
+			This is the beginning of the channel <b>#{{ channel.name }}</b> in team <b>{{ teamName }}</b>. Created on <b>{{ channelCreatedAt }}</b>.
+		</div>
+		<table style="margin-top: 10px;">
 			<tbody>
 				<tr ng-repeat="msg in msgHistory">
 					<td width="20%" ng-if="user.id == u.id"><b>You</b><br><small class="grey-text">{{ msg.createdAt }}</small></td>

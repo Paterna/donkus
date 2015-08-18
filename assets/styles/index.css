@@ -12,6 +12,16 @@ body {
     color: red;
 }
 
-/* .parallax-container {
-    height: 100px;
-} */
+.members {
+	margin: 10px;
+	color: #888;
+}
+
+.item {
+	border-left: 6px solid transparent;
+}
+
+.active-item {
+	border-left: 6px solid #039be5;
+	font-weight: bold;
+}

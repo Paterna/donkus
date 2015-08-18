@@ -12,8 +12,12 @@ module.exports = {
 	getMessages: function (req, res) {
 		var channel = req.params.channel;
 
-		Message.find({
+		Message.find()
+		.where({
 			channel: channel
+		})
+		.sort({
+			updatedAt: 'asc'
 		})
 		.then(res.api_ok)
 		.catch(res.api_error)
