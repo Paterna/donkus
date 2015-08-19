@@ -164,7 +164,7 @@ app.run(['$rootScope', '$http', '$state',
          * $rootScope.user = something -> Este es nuestro usuario actual.
          */
         $rootScope.user = undefined;
-        $rootScope.callInProgress = false;
+        $rootScope.notify = false;
 
         $rootScope.logout = function () {
             $http.delete('/api/user')
@@ -433,8 +433,8 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
     }
 ]);
 
-app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$stateParams',
-    function ($rootScope, $scope, $state, $http, $stateParams) {
+app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$stateParams', '$filter',
+    function ($rootScope, $scope, $state, $http, $stateParams, $filter) {
         
         window.$scope = $scope;
         $scope.data = null;
@@ -477,7 +477,9 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                     $scope.msgHistory.push({
                                         author: streamEvent.msg.author,
                                         data: streamEvent.msg.text,
-                                        createdAt: moment(streamEvent.msg.timestamp).format("HH:mm:ss")
+                                        time: moment(streamEvent.msg.timestamp).format("HH:mm:ss"),
+                                        day: moment(streamEvent.msg.timestamp).format('Do MMMM'),
+                                        createdAt: streamEvent.msg.timestamp
                                     });
                                     $scope.$apply();
                                     document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
@@ -550,7 +552,9 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             $scope.msgHistory.push({
                                 author: author.name,
                                 data: msg.data,
-                                createdAt: moment(msg.createdAt).format('HH:mm:ss')
+                                time: moment(msg.createdAt).format('HH:mm:ss'),
+                                day: moment(msg.createdAt).format('Do MMMM'),
+                                createdAt: msg.createdAt
                             });
                         });
                     });

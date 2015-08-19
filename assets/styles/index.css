@@ -25,3 +25,30 @@ body {
 	border-left: 6px solid #039be5;
 	font-weight: bold;
 }
+
+.chat-input {
+	border-top: 1px solid #ddd;
+}
+
+.msg-day {
+	text-align: center;
+	color: #888;
+	font-weight: bold;
+	background-color: white;
+	border-bottom: 1px dashed #ddd;
+	margin: 10px 0 10px 0;
+}
+
+.msg-container {
+	margin-bottom: 10px;
+}
+
+.msg-author {
+	font-weight: bold;
+}
+
+.msg-time {
+	font-weight: bold;
+	font-size: small;
+	color: #aaa;
+}

@@ -16,9 +16,6 @@ module.exports = {
 		.where({
 			channel: channel
 		})
-		.sort({
-			updatedAt: 'asc'
-		})
 		.then(res.api_ok)
 		.catch(res.api_error)
 	},

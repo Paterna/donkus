@@ -3,20 +3,21 @@
 		<div class="grey-text" style="padding-bottom: 30px; border-bottom: 1px solid #ddd">
 			This is the beginning of the channel <b>#{{ channel.name }}</b> in team <b>{{ teamName }}</b>. Created on <b>{{ channelCreatedAt }}</b>.
 		</div>
-		<table style="margin-top: 10px;">
-			<tbody>
-				<tr ng-repeat="msg in msgHistory">
-					<td width="20%" ng-if="user.id == u.id"><b>You</b><br><small class="grey-text">{{ msg.createdAt }}</small></td>
-					<td width="20%" ng-if="user.id != u.id"><b>{{ msg.author }}</b><br><small class="grey-text">{{ msg.createdAt }}</small></td>
-					<td width="80%">{{ msg.data }}</td>
-				</tr>
-			</tbody>
-		</table>
+		<div class="row">
+			<div class="col s12 msg-container" ng-repeat="msg in msgHistory | orderBy:'createdAt'">
+				<div class="col s12 msg-day" ng-show="msg.day != msgHistory[$index-1].day">{{ msg.day }}</div>
+				<div class="col s2">
+					<span class="msg-author">{{ msg.author }}</span>
+					<span class="msg-time">{{ msg.time }}</span>
+				</div>
+				<div class="col s10"><span class="msg-data">{{ msg.data }}</span></div>
+			</div>
+		</div>
 	</div>
 </div>
 <div class="row">
 	<form class="col s9">
-		<div class="row">
+		<div class="row chat-input">
 			<div class="input-field col s10">
 				<label for="chat">Type a message...</label>
 				<textarea id="chat" class="materialize-textarea" ng-model="chatMsg" ng-enter="sendMsg(chatMsg)"></textarea>
@@ -28,7 +29,7 @@
 	</form>
 	<div class="col s3">
 		<div ng-show="!callInProgress" class="fixed-action-btn" style="bottom: 45px; right: 80px;">
-			<a ng-click="videocall(channel.id)" href="/#/videocall/{{ channel.id }}" class="btn-floating btn-large indigo accent-3">
+			<a ng-click="videocall(channel.id)" class="btn-floating btn-large indigo accent-3">
 				<i class="large material-icons">videocam</i>
 			</a>
 			<a href="/#/call/{{ channel.id }}" class="btn-floating btn-large indigo accent-3">
