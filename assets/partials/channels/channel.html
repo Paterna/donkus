@@ -5,12 +5,16 @@
 		</div>
 		<div class="row">
 			<div class="col s12 msg-container" ng-repeat="msg in msgHistory | orderBy:'createdAt'">
-				<div class="col s12 msg-day" ng-show="msg.day != msgHistory[$index-1].day">{{ msg.day }}</div>
+				<div class="col s12 msg-day" style="padding-bottom: 10px" ng-show="msg.day != msgHistory[$index-1].day">{{ msg.day }}</div>
+				<div class="col s10" ng-show="msg.author != msgHistory[$index-1].author">
+					<span class="msg-author blue-text">{{ msg.author }}</span>
+				</div>
+				<div class="col s10 msg-data-container">
+					<span class="msg-data">{{ msg.data }}</span>
+				</div>
 				<div class="col s2">
-					<span class="msg-author">{{ msg.author }}</span>
 					<span class="msg-time">{{ msg.time }}</span>
 				</div>
-				<div class="col s10"><span class="msg-data">{{ msg.data }}</span></div>
 			</div>
 		</div>
 	</div>

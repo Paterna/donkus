@@ -28,27 +28,38 @@ body {
 
 .chat-input {
 	border-top: 1px solid #ddd;
+	margin: 0 !important;
 }
 
 .msg-day {
 	text-align: center;
 	color: #888;
 	font-weight: bold;
-	background-color: white;
 	border-bottom: 1px dashed #ddd;
 	margin: 10px 0 10px 0;
 }
 
 .msg-container {
-	margin-bottom: 10px;
+	line-height: 1.5em;
 }
 
+.msg-container:hover {
+	background: #f3f3f3;
+	border-radius: 4px;
+}
 .msg-author {
 	font-weight: bold;
 }
 
 .msg-time {
-	font-weight: bold;
-	font-size: small;
+	font-size: 0.7em;
 	color: #aaa;
+}
+
+.msg-data {
+	font-size: 0.9em;
+}
+
+.msg-data-container {
+	margin: 6px 0px 6px 0px;
 }
