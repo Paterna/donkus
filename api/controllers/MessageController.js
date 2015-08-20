@@ -16,6 +16,7 @@ module.exports = {
 		.where({
 			channel: channel
 		})
+		.populate('author')
 		.then(res.api_ok)
 		.catch(res.api_error)
 	},

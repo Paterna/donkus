@@ -15,18 +15,19 @@ module.exports = {
 		Channel.findOne({
 			id: channel
 		})
-		.then( function (channel) {
-			Team.findOne({
+		.then(function (channel) {
+			var teamPromise = Team.findOne({
 				id: channel.team
 			})
-			.populate('users')
-			.then( function (team) {
-				res.api_ok({
-					channel: channel,
-					team: team
-				});
-			})
-			.catch( res.api_error );
+			.populate('users');
+
+			return [channel, teamPromise]
+		})
+		.spread(function (channel, team) {
+			res.api_ok({
+				channel: channel,
+				team: team
+			});
 		})
 		.catch( res.api_error );
 	},
@@ -34,19 +35,18 @@ module.exports = {
 	 * Permite a un usuario crear un canal que será visible para el resto de usuarios del equipo.
 	 */
 	create: function(req, res) {
-		var user = req.user;
 		var team = req.params.team || req.body.team;
 		var channelName = req.body.name;
+		var desc = req.body.desc;
+		var room = req.body.room;
 
 		Channel.create({
 			name: channelName,
-			team: team
+			team: team,
+			description: desc,
+			room: room
 		})
 		.then(function (channel) {
-			/* TODO:
-			 * team.users.add(user.id);
-			 * team.save( console.log );
-			 */
 			res.api_ok(channel);
 		})
 		.catch( res.api_error );

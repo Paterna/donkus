@@ -18,12 +18,12 @@ module.exports = {
             var rooms = JSON.parse(roomlist);
             for (var room in rooms) {
                 if (rooms[room].name === 'donkusRoom')
-                myRoom = rooms[room]._id;
+                    myRoom = rooms[room]._id;
             }
             if (!myRoom) {
                 N.API.createRoom('donkusRoom', function (roomID) {
                     myRoom = roomID._id;
-                    console.log('Created room ', myRoom);
+                    console.log('Created room', myRoom);
                 });
             }
             else
@@ -47,19 +47,20 @@ module.exports = {
     	var room = req.params.room;
 
     	N.API.getRoom(room, function (room) {
-    		res.api_ok(room);
+    		res.api_ok(JSON.parse(room));
     	}, function (err) {
     		res.api_error({ code: 12, message: err });
     	});
     },
     createRoom: function(req, res) {
     	"use strict";
-    	var roomName = req.body.roomName;
+    	var roomName = req.body.name;
     	// See Create Rooms documentation in http://lynckia.com/licode/server-api.html
     	var options = req.body.options || {};
 
     	N.API.createRoom(roomName, function (room) {
-    		res.api.ok(room);
+            console.log("Room created correctly:", room);
+    		res.api_ok(room);
     	}, function (err) {
     		res.api_error({ code: 13, message: err });
     	}, options);

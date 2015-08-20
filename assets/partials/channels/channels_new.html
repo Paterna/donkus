@@ -6,13 +6,18 @@
 			<div class="input-field col s12">
 				<i class="material-icons prefix">device_hub</i>
 				<input ng-model="channelName" id="channel-name-field" type="text">
-				<label for="channel-name-field">Channel name</label>
+				<label for="channel-name-field" data-succes="ok" data-error="Wrong field input">Channel name</label>
+			</div>
+			<div class="input-field col s12">
+				<i class="material-icons prefix">description</i>
+				<textarea ng-model="description" class="materialize-textarea" id="channel-desc-field"></textarea>
+				<label for="channel-desc-field" data-succes="ok" data-error="Wrong field input">Purpose of this channel</label>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col s12 m8">
 				<a href="/#/team/{{ teamID }}" class="btn waves-effect waves-light indigo accent-1 right col s5 offset-s1">Cancel</a>
-				<button ng-click="create(channelName)" class="btn waves-effect waves-light indigo accent-2 right col s5 offset-s1">Create</button>
+				<button ng-click="create(channelName, description)" class="btn waves-effect waves-light indigo accent-2 right col s5 offset-s1">Create</button>
 			</div>
 		</div>
 	</form>

@@ -1,5 +1,6 @@
 var app = angular.module('app', [
-    'ui.router'
+    'ui.router',
+    '$q-spread'
 ]);
 
 app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
@@ -433,8 +434,8 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
     }
 ]);
 
-app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$stateParams', '$filter',
-    function ($rootScope, $scope, $state, $http, $stateParams, $filter) {
+app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$stateParams', '$q',
+    function ($rootScope, $scope, $state, $http, $stateParams, $q) {
         
         window.$scope = $scope;
         $scope.data = null;
@@ -446,15 +447,12 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         $scope.msgHistory = [];
 
         var init = function() {
-
             if ($stateParams.channel) {
-                getChannel($stateParams.channel);
-                $http.get('/api/licode/room/current')
-                .then(function (room) {
-                    createToken(room, 'presenter', function (response) {
+                getChannel($stateParams.channel)
+                .then(function (channel) {
+                    createToken(channel.room, 'presenter', function (token) {
                         var localStream = Erizo.Stream({ audio: false, video: false, data: true });
 
-                        var token = response;
                         room = Erizo.Room({ token: token });
 
                         localStream.addEventListener("access-accepted", function () {
@@ -526,17 +524,16 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                         localStream.init();
                         document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                     });
-
                 })
                 .catch(function (err) {
-                    console.error(err);
+                    sweetAlert("Error!", err.message, "error");
                 });
             }
 
         }
 
         var getChannel = function(channelID) {
-            $http.get('/api/channel/' + channelID)
+            return $http.get('/api/channel/' + channelID)
             .then(function (data) {
                 $scope.data = data;
                 $scope.channel = data.channel;
@@ -544,27 +541,22 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                 $scope.team = data.team;
                 $scope.teamName = data.team.name;
                 $scope.users = data.team.users;
-                $http.get('/api/messages/' + channelID)
-                .then(function (messages) {
-                    messages.forEach(function (msg) {
-                        $http.get('/api/user/' + msg.author)
-                        .then(function (author) {
-                            $scope.msgHistory.push({
-                                author: author.name,
-                                data: msg.data,
-                                time: moment(msg.createdAt).format('HH:mm:ss'),
-                                day: moment(msg.createdAt).format('Do MMMM'),
-                                createdAt: msg.createdAt
-                            });
-                        });
-                    });
-                })
-                .catch(function (err) {
-                    sweetAlert("Error!", err.message, "error");
-                });
+
+                var messages = $http.get('/api/messages/' + channelID);
+
+                return $q.all([data.channel, messages]);
             })
-            .catch(function (err) {
-                sweetAlert("Error!", err.message, "error");
+            .spread(function (channel, messages) {
+                messages.forEach(function (msg) {
+                    $scope.msgHistory.push({
+                        author: msg.author.name,
+                        data: msg.data,
+                        time: moment(msg.createdAt).format('HH:mm:ss'),
+                        day: moment(msg.createdAt).format('Do MMMM'),
+                        createdAt: msg.createdAt
+                    });
+                });
+                return channel; 
             });
         }
         
@@ -578,26 +570,34 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
             });
         }
 
-        $scope.create = function(channelName) {
-
-            $http.post('/api/channel/create', {
-                name: channelName,
-                team: $stateParams.team
+        $scope.create = function(channelName, description) {
+            $http.post('/api/licode/room/create', {
+                name: (channelName + 'Room').replace(' ', '_')
             })
-            .then(function (team) {
+            .then(function (room) {
+                var channelBody = {
+                    name: channelName,
+                    team: $stateParams.team,
+                    room: room,
+                    desc: description
+                };
+                var channel = $http.post('/api/channel/create', channelBody);
+
+                return $q.all([room, channel]);
+            })
+            .spread(function (room, channel) {
                 swal({
                     title: 'Good!',
                     text: 'Channel created successfully',
                     type: 'success',
                     confirmButton: 'Ok'
                 }, function () {
-                    //$scope.team = team;
                     $state.go('team', { team: $stateParams.team });
-                })
+                });
             })
             .catch(function (err) {
                 sweetAlert("Error!", err.message, "error");
-            })
+            });
         };
 
         init();
@@ -645,14 +645,12 @@ app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
                 $scope.channel = data.channel;
                 $scope.team = data.team;
                 $scope.users = data.team.users;
-                $http.get('/api/team/' + data.team.id)
-                .then(function (data) {
-                    $scope.channels = data.channels;
-                    console.log(data.channels)
-                })
-                .catch(function (err) {
-                    sweetAlert("Error!", err.message, "error");
-                });
+                
+                var team = $http.get('/api/team/' + data.team.id);
+                return team;
+            })
+            .then(function (team) {
+                $scope.channels = team.channels;
             })
             .catch(function (err) {
                 sweetAlert("Error!", err.message, "error");
@@ -672,7 +670,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         $scope.stopRecord = null;
         $scope.recordID = null;
 
-        var startCall = function (response) {
+        var startCall = function (token) {
             var localStream;
             var screen = getParameterByName("screen");
 
@@ -688,7 +686,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 
             localStream = Erizo.Stream(config);
 
-            var token = response;
             room = Erizo.Room({token: token});
             localStream.addEventListener("access-accepted", function () {
                 var stream;
@@ -818,11 +815,17 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         }
 
         var init = function () {
-            $http.get('/api/licode/room/current')
+            $http.get('/api/channel/' + $stateParams.channel)
+            .then(function (data) {
+                var roomID = data.channel.room;
+                var room = $http.get('/api/licode/room/' + roomID);
+                return room;
+            })
             .then(function (room) {
+                console.log(room._id);
                 var cb = startCall;
                 var role = 'presenter';
-                createToken(room, role, cb);
+                createToken(room._id, role, cb);
 
             })
             .catch(function (err) {

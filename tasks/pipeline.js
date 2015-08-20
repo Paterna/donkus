@@ -32,6 +32,7 @@ var jsFilesToInject = [
   '/js/dependencies/angular.min.js',
   '/js/dependencies/angular-ui-router.min.js',
   '/js/dependencies/angular-cookies.min.js',
+  'js/dependencies/q-spread.min.js',
   '/js/dependencies/erizo.min.js',
   '/js/dependencies/jquery-2.1.4.min.js',
   '/js/dependencies/sweetalert.min.js',
