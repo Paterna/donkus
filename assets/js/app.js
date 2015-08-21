@@ -165,7 +165,7 @@ app.run(['$rootScope', '$http', '$state',
          * $rootScope.user = something -> Este es nuestro usuario actual.
          */
         $rootScope.user = undefined;
-        $rootScope.notify = false;
+        $rootScope.rooms = [];
 
         $rootScope.logout = function () {
             $http.delete('/api/user')
@@ -238,15 +238,17 @@ app.run(['$rootScope', '$http', '$state',
                 // if (requiresNoAuth) o es un estado que no impone tipo de auth
                 $state.go(toState, toParams);
             });
-        })
+        });
+
+        $rootScope.rooms = $http.get('/api/licode/rooms');
     }
 ]);
 
 app.controller('appCtrl', ['$scope', '$state', 
     function ($scope, $state) {
         // DEBUG
-        window.$scope = $scope;
-        // window.$state = $state;
+        // window.$scope = $scope;
+        $state.go('teams');
     }
 ]);
 
@@ -301,7 +303,6 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
                     password2: password2
                 })
                 .then(function (user) {
-                    console.log(user);
                     swal({
                         title: 'Done!',
                         text: 'You signed up as ' + name,
@@ -312,7 +313,7 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
                     });
                 })
                 .catch(function (err) {
-                    console.log(err);
+                    console.error(err);
                     if (err.code == 1)
                         sweetAlert("Error!", "A user with email " + email + " already exist!", "error");
                     else
@@ -335,10 +336,13 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
                 }, function () {
                     $rootScope.user = user;
                     $state.go('home');
-                })
+                });
             })
             .catch(function (err) {
-                sweetAlert("Error!", err.message, "error");
+                if (err.code == 6)
+                    sweetAlert("Error!", err.message, "error");
+                else
+                    console.log(err);
             });
         }
     }
@@ -369,7 +373,7 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
                     $scope.teams = data;
             })
             .catch(function (err) {
-                console.log("Error al obtener los equipos del usuario: " + err);
+                console.error("Error al obtener los equipos del usuario: " + err);
             });
         };
 
@@ -388,7 +392,7 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
                 //$state.go('team');
             })
             .catch(function (err) {
-                console.log("Error al obtener el equipo solicitado: " + err);
+                console.error("Error al obtener el equipo solicitado: " + err);
             });
         };
 
@@ -479,6 +483,11 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                         day: moment(streamEvent.msg.timestamp).format('Do MMMM'),
                                         createdAt: streamEvent.msg.timestamp
                                     });
+                                    // TODO: notify messages
+                                    // if (streamEvent.msg.authorID != $rootScope.user.id) {
+                                    //     var ch = 'ch' + streamEvent.msg.channelID;
+                                    //     document.getElementById(ch).style.display = 'inline';
+                                    // }
                                     $scope.$apply();
                                     document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                                 });
@@ -492,6 +501,23 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                 var streams = [];
                                 streams.push(streamEvent.stream);
                                 subscribeToStreams(streams);
+                                if (streamEvent.stream.hasVideo() || streamEvent.stream.hasAudio()) {
+                                    swal({
+                                        title: "Incoming call",
+                                        text:'In channel ' + $scope.channelName + '. Enter?',
+                                        type: "info",
+                                        showCancelButton: true,
+                                        confirmButtonText: "Yes",
+                                        cancelButtonText: "No",
+                                        closeOnConfirm: true,
+                                        closeOnCancel: true,
+                                        showLoaderOnConfirm: true
+                                    }, function (isConfirm) {
+                                        if (isConfirm) {
+                                            $scope.videocall($stateParams.channel);
+                                        }
+                                    });
+                                }
                             });
 
                             $scope.sendMsg = function (msg) {
@@ -503,7 +529,9 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                         localStream.sendData({
                                             text: msg,
                                             timestamp: new Date(),
-                                            author: $rootScope.user.name
+                                            author: $rootScope.user.name,
+                                            authorID: $rootScope.user.id,
+                                            channelID: $stateParams.channel
                                         });
                                         $scope.chatMsg = null;
                                     })
@@ -514,6 +542,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             }
 
                             $scope.videocall = function(channelID) {
+                                room.unsubscribe(stream);
                                 room.unpublish(localStream);
                                 localStream.close();
                                 room.disconnect();
@@ -529,7 +558,6 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                     sweetAlert("Error!", err.message, "error");
                 });
             }
-
         }
 
         var getChannel = function(channelID) {
@@ -553,6 +581,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                         data: msg.data,
                         time: moment(msg.createdAt).format('HH:mm:ss'),
                         day: moment(msg.createdAt).format('Do MMMM'),
+                        year: moment(msg.createdAt).format('YYYY'),
                         createdAt: msg.createdAt
                     });
                 });
@@ -561,7 +590,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         }
         
         var createToken = function(room, role, cb) {
-            $http.post('/api/licode/token/create/' + room, {
+            return $http.post('/api/licode/token/create/' + room, {
                 role: role
             })
             .then(cb)
@@ -575,6 +604,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                 name: (channelName + 'Room').replace(' ', '_')
             })
             .then(function (room) {
+                $rootScope.rooms.push(room);
                 var channelBody = {
                     name: channelName,
                     team: $stateParams.team,
@@ -635,7 +665,7 @@ app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
                 //$state.go('team');
             })
             .catch(function (err) {
-                console.log("Error al obtener el equipo solicitado: " + err);
+                console.error("Error al obtener el equipo solicitado: " + err);
             });
         };
 
@@ -672,17 +702,8 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 
         var startCall = function (token) {
             var localStream;
-            var screen = getParameterByName("screen");
 
-            var config = {
-                audio: true,
-                video: true,
-                data: true,
-                screen: screen
-            };
-
-            if (screen)
-                config.extensionId = "okeephmleflklcdebijnponpabbmmgeo";
+            var config = { audio: true, video: true, data: true };
 
             localStream = Erizo.Stream(config);
 
@@ -707,7 +728,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                             });
                             room.unpublish(localStream, function (result, err) {
                                 if (result === undefined)
-                                    console.log("Error unpublishing: ", err);
+                                    console.error("Error unpublishing: ", err);
                                 else
                                     console.log("Stream unpublished!");
                                 console.log("Stream unpublished:", result)
@@ -822,7 +843,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                 return room;
             })
             .then(function (room) {
-                console.log(room._id);
                 var cb = startCall;
                 var role = 'presenter';
                 createToken(room._id, role, cb);

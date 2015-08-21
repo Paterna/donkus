@@ -4,8 +4,8 @@
 <li ng-show="!channels">
 	<span class="grey-text lighten-2"><small>There are not channels here</small></span>
 </li>
-<li ng-show="channels" class="bold" ng-repeat="c in channels">
-	<a ng-class="{'active-item' : c.id == channel.id}" class="waves-effect waves-teal item" href="/#/channel/{{ c.id }}">#&nbsp;{{ c.name }}</a>
+<li ng-show="channels" ng-class="{'active-item' : c.id == channel.id}" class="item" ng-repeat="c in channels">
+	<a class="waves-effect waves-teal" href="/#/channel/{{ c.id }}">#&nbsp;{{ c.name }}&nbsp;<i id="ch{{ c.id }}" style="display: none" class="tiny material-icons orange-text">lens</i></a>
 	<!-- <a class="waves-effect waves-teal" ng-click="getChannel(c.id)">#&nbsp;{{ c.name }}</a> -->
 </li>
 

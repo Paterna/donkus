@@ -48,7 +48,7 @@ module.exports.routes = {
 
   /* Licode API routes */
   // Rooms
-  'get /api/licode/get_rooms': 'LicodeController.getRooms',
+  'get /api/licode/rooms': 'LicodeController.getRooms',
   'get /api/licode/room/current': 'LicodeController.getCurrentRoom',
   'get /api/licode/room/:room': 'LicodeController.getRoom',
   'post /api/licode/room/create': 'LicodeController.createRoom',

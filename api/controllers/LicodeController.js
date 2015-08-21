@@ -37,7 +37,7 @@ module.exports = {
         "use strict";
 
         N.API.getRooms(function (rooms) {
-            res.api_ok(rooms);
+            res.api_ok(JSON.parse(rooms));
         }, function (err) {
         	res.api_error({ code: 11, message: err });
         });
