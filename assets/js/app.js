@@ -165,7 +165,7 @@ app.run(['$rootScope', '$http', '$state',
          * $rootScope.user = something -> Este es nuestro usuario actual.
          */
         $rootScope.user = undefined;
-        $rootScope.rooms = [];
+        // $rootScope.rooms = [];
 
         $rootScope.logout = function () {
             $http.delete('/api/user')
@@ -240,7 +240,7 @@ app.run(['$rootScope', '$http', '$state',
             });
         });
 
-        $rootScope.rooms = $http.get('/api/licode/rooms');
+        // $rootScope.rooms = $http.get('/api/licode/rooms');
     }
 ]);
 
@@ -604,7 +604,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                 name: (channelName + 'Room').replace(' ', '_')
             })
             .then(function (room) {
-                $rootScope.rooms.push(room);
+                //$rootScope.rooms.push(room);
                 var channelBody = {
                     name: channelName,
                     team: $stateParams.team,
