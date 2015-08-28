@@ -693,14 +693,16 @@ app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
 app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
     function ($scope, $state, $stateParams, $http) {
         window.$scope = $scope;
-        $scope.streamID = null;
+        $scope.streams = [];
+        $scope.stream = null;
         $scope.endCall = null;
         $scope.isRecording = false;
         $scope.record = null;
         $scope.stopRecord = null;
         $scope.recordID = null;
         $scope.loadingLocal = true;
-        $scope.loadingStream = true;
+        $scope.loadingStream = false;
+        $scope.loadingFirst = true;
 
         var init = function () {
             $http.get('/api/channel/' + $stateParams.channel)
@@ -728,7 +730,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var room = Erizo.Room({ token: token });
 
             localStream.addEventListener("access-accepted", function () {
-                var stream;
+                var stream = null;
 
                 $scope.endCall = function () {
                     swal({
@@ -742,9 +744,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                         closeOnCancel: true
                     }, function (isConfirm) {
                         if (isConfirm) {
-                            room.unsubscribe(stream, function (obj) {
-                                console.log("Unsubscribed:", obj);
-                            });
+                            room.unsubscribe(stream);
                             room.unpublish(localStream, function (result, err) {
                                 if (result === undefined)
                                     console.error("Error unpublishing: ", err);
@@ -784,34 +784,39 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 
                 var subscribeToStreams = function(streams) {
                     for (var i in streams) {
-                        stream = streams[i];
+                        var stream = streams[i];
                         room.subscribe(stream);
                     }
                 }
                 room.addEventListener("room-connected", function (roomEvent) {
                     room.publish(localStream, { maxVideoBW: 300 });
+                    roomEvent.streams.forEach(function (stream) {
+                        $scope.streams.push(stream);
+                    });
                     subscribeToStreams(roomEvent.streams);
                 });
 
                 room.addEventListener("stream-subscribed", function(streamEvent) {
                     stream = streamEvent.stream;
-                    $scope.streamID = stream.getID();
+                    $scope.stream = stream;
                     if (stream.getID() == localStream.getID()) {
                         $scope.loadingLocal = false;
                         $scope.$apply();
                         stream.show("my-video");
                     }
-                    else {
+                    else if (stream.pc) {
+                        clearTimeout(timeOut);
+                        $scope.loadingFirst = false;
                         $scope.loadingStream = false;
                         $scope.$apply();
-                        stream.show("video");
+                        stream.show("video" + stream.getID());
                     }
                 });
 
                 room.addEventListener("stream-added", function (streamEvent) {
-                    var streams = [];
-                    streams.push(streamEvent.stream);
-                    subscribeToStreams(streams);
+                    $scope.loadingStream = true;
+                    $scope.streams.push(streamEvent.stream);
+                    subscribeToStreams($scope.streams);
                 });
 
                 room.addEventListener("stream-removed", function (streamEvent) {
@@ -835,7 +840,51 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                     room.disconnect();
                 });
 
+                var timeOut = function() {
+                    setTimeout(function () {
+                        swal({
+                            title: "You seem to be alone",
+                            text:'Try again?',
+                            type: "info",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Yes",
+                            cancelButtonText: "No",
+                            closeOnConfirm: true,
+                            closeOnCancel: true
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                room.unsubscribe(stream);
+                                room.unpublish(localStream, function (result, err) {
+                                    if (result === undefined)
+                                        console.error("Error unpublishing: ", err);
+                                    else
+                                        console.log("Stream unpublished!");
+                                    console.log("Stream unpublished:", result)
+                                });
+                                localStream.close();
+                                room.disconnect();
+                                init();
+                            }
+                            else {
+                                room.unsubscribe(stream);
+                                room.unpublish(localStream, function (result, err) {
+                                    if (result === undefined)
+                                        console.error("Error unpublishing: ", err);
+                                    else
+                                        console.log("Stream unpublished!");
+                                    console.log("Stream unpublished:", result)
+                                });
+                                localStream.close();
+                                room.disconnect();
+                                $state.go('channel', { channel: $stateParams.channel });
+                            }
+                        });
+                    }, 20000);
+                }
+
                 room.connect();
+                timeOut();
 
                 //localStream.show("video");
             });
@@ -852,7 +901,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var results = regex.exec(location.search);
             return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
-
         init();
     }
 ]);
