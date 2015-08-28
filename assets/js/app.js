@@ -699,15 +699,34 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         $scope.record = null;
         $scope.stopRecord = null;
         $scope.recordID = null;
+        $scope.loadingLocal = true;
+        $scope.loadingStream = true;
+
+        var init = function () {
+            $http.get('/api/channel/' + $stateParams.channel)
+            .then(function (data) {
+                var roomID = data.channel.room;
+                var room = $http.get('/api/licode/room/' + roomID);
+                return room;
+            })
+            .then(function (room) {
+                var token = $http.post('/api/licode/token/create/' + room._id, { role: 'presenter' });
+                return token;
+            })
+            .then(startCall)
+            .catch(function (err) {
+                sweetAlert("Error!", "Something went wrong", "error");
+                console.error(err);
+            });
+        }
 
         var startCall = function (token) {
             var localStream;
-
             var config = { audio: true, video: true, data: true };
 
             localStream = Erizo.Stream(config);
+            var room = Erizo.Room({ token: token });
 
-            room = Erizo.Room({token: token});
             localStream.addEventListener("access-accepted", function () {
                 var stream;
 
@@ -777,7 +796,16 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                 room.addEventListener("stream-subscribed", function(streamEvent) {
                     stream = streamEvent.stream;
                     $scope.streamID = stream.getID();
-                    stream.show("subscribed");
+                    if (stream.getID() == localStream.getID()) {
+                        $scope.loadingLocal = false;
+                        $scope.$apply();
+                        stream.show("my-video");
+                    }
+                    else {
+                        $scope.loadingStream = false;
+                        $scope.$apply();
+                        stream.show("video");
+                    }
                 });
 
                 room.addEventListener("stream-added", function (streamEvent) {
@@ -809,7 +837,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 
                 room.connect();
 
-                localStream.show("video");
+                //localStream.show("video");
             });
             localStream.init();
         }
@@ -823,34 +851,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
             var results = regex.exec(location.search);
             return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
-
-        var createToken = function(room, role, cb) {
-            $http.post('/api/licode/token/create/' + room, {
-                role: role
-            })
-            .then(cb)
-            .catch(function (err) {
-                sweetAlert("Error!", err.message, "error");
-            });
-        }
-
-        var init = function () {
-            $http.get('/api/channel/' + $stateParams.channel)
-            .then(function (data) {
-                var roomID = data.channel.room;
-                var room = $http.get('/api/licode/room/' + roomID);
-                return room;
-            })
-            .then(function (room) {
-                var cb = startCall;
-                var role = 'presenter';
-                createToken(room._id, role, cb);
-
-            })
-            .catch(function (err) {
-                console.error(err);
-            });
         }
 
         init();
