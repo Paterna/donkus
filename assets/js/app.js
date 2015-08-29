@@ -449,6 +449,16 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         $scope.teamName = null;
         $scope.users = null;
         $scope.msgHistory = [];
+        $scope.msgLimit = 10;
+
+        document.getElementById('board').addEventListener("scroll", function (event) {
+            if (event.srcElement.scrollTop == 0) {
+                setTimeout(function () {
+                    $scope.msgLimit += 10;
+                    $scope.$apply();
+                }, 1000);
+            }
+        });
 
         var init = function() {
             if ($stateParams.channel) {
@@ -732,7 +742,38 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             localStream.addEventListener("access-accepted", function () {
                 var stream = null;
 
+                var timeOut = setTimeout(function () {
+                    swal({
+                        title: "You seem to be alone",
+                        text:'Try again?',
+                        type: "info",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes",
+                        cancelButtonText: "No",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    }, function (isConfirm) {
+                        room.unsubscribe(stream);
+                        room.unpublish(localStream, function (result, err) {
+                            if (result === undefined)
+                                console.error("Error unpublishing: ", err);
+                            else
+                                console.log("Stream unpublished!");
+                            console.log("Stream unpublished:", result)
+                        });
+                        localStream.close();
+                        room.disconnect();
+
+                        if (isConfirm)
+                            init();
+                        else
+                            $state.go('channel', { channel: $stateParams.channel });
+                    });
+                }, 20000);
+
                 $scope.endCall = function () {
+                    clearTimeout(timeOut);
                     swal({
                         title: "End call?",
                         type: "warning",
@@ -840,51 +881,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                     room.disconnect();
                 });
 
-                var timeOut = function() {
-                    setTimeout(function () {
-                        swal({
-                            title: "You seem to be alone",
-                            text:'Try again?',
-                            type: "info",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Yes",
-                            cancelButtonText: "No",
-                            closeOnConfirm: true,
-                            closeOnCancel: true
-                        }, function (isConfirm) {
-                            if (isConfirm) {
-                                room.unsubscribe(stream);
-                                room.unpublish(localStream, function (result, err) {
-                                    if (result === undefined)
-                                        console.error("Error unpublishing: ", err);
-                                    else
-                                        console.log("Stream unpublished!");
-                                    console.log("Stream unpublished:", result)
-                                });
-                                localStream.close();
-                                room.disconnect();
-                                init();
-                            }
-                            else {
-                                room.unsubscribe(stream);
-                                room.unpublish(localStream, function (result, err) {
-                                    if (result === undefined)
-                                        console.error("Error unpublishing: ", err);
-                                    else
-                                        console.log("Stream unpublished!");
-                                    console.log("Stream unpublished:", result)
-                                });
-                                localStream.close();
-                                room.disconnect();
-                                $state.go('channel', { channel: $stateParams.channel });
-                            }
-                        });
-                    }, 20000);
-                }
-
                 room.connect();
-                timeOut();
 
                 //localStream.show("video");
             });

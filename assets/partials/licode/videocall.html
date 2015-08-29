@@ -1,82 +1,65 @@
-<style type="text/css">
-	body {
-		background-color: #444;
-	}
-</style>
-<div class="row" id="video-pull">
-	<div id="active-video">
-		
-	</div>
-	<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn" style="top: 90px; left: 250px;">
-		<div id="{{'video' + stream.getID()}}" class="z-depth-1" style="height: 108px; width: 192px;">
-			<div ng-show="loadingStream" class="preloader-wrapper small active valign" style="left: 75px">
-				<div class="spinner-layer spinner-green-only">
-					<div class="circle-clipper left">
-						<div class="circle"></div>
-					</div><div class="gap-patch">
-						<div class="circle"></div>
-					</div>
-					<div class="circle-clipper right">
-						<div class="circle"></div>
-					</div>
-				</div>
-			</div>
-			<div ng-show="!stream.hasVideo()" class="center-align">
-				<i class="material-icons medium white-text" style="margin-top: 25px">videocam_off</i>
-			</div>
+<div id="video-pull">
+	<div class="row">
+		<div id="active-video">
+			
 		</div>
-	</div>
-	<!-- <div ng-repeat="s in streams" id="{{ 'video' + s.getID() }}" class="z-depth-1" style="height: 108px; width: 192px;">
-		<div ng-show="loadingStream" class="preloader-wrapper small active valign" style="left: 75px">
-			<div class="spinner-layer spinner-green-only">
-				<div class="circle-clipper left">
-					<div class="circle"></div>
-				</div><div class="gap-patch">
-					<div class="circle"></div>
+		<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn" style="top: 90px; left: 250px;">
+			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1" style="height: 108px; width: 192px;">
+				<div ng-show="loadingStream" class="preloader-wrapper small active valign" style="left: 75px">
+					<div class="spinner-layer spinner-green-only">
+						<div class="circle-clipper left">
+							<div class="circle"></div>
+						</div><div class="gap-patch">
+							<div class="circle"></div>
+						</div>
+						<div class="circle-clipper right">
+							<div class="circle"></div>
+						</div>
+					</div>
 				</div>
-				<div class="circle-clipper right">
-					<div class="circle"></div>
+				<div ng-show="!stream.hasVideo()" class="center-align">
+					<i class="material-icons medium white-text" style="margin-top: 25px">videocam_off</i>
 				</div>
 			</div>
 		</div>
-	</div> -->
-	<div ng-show="loadingFirst" id="waiting" style="margin-top: 20%">
-		<div class="col s12 m8 offset-m1">
-			<h3 class="white-text center-align">Calling...</h3>
+		<div ng-show="loadingFirst" id="waiting">
+			<div class="col s12 m8 offset-m1">
+				<h3 class="white-text center-align">Calling...</h3>
+			</div>
+			<div class="col s12 m8 offset-m1 progress green lighten-3">
+				<div class="indeterminate green darken-3"></div>
+			</div>
 		</div>
-		<div class="col s12 m8 offset-m1 progress green lighten-3">
-			<div class="indeterminate green darken-3"></div>
-		</div>
-	</div>
-	<div id="video-localstream" class="fixed-action-btn" style="bottom: 15px; right: 190px;">
-		<div id="my-video" class="z-depth-1 valign-wrapper" style="height: 108px; width: 192px;">
-			<div ng-show="loadingLocal" class="preloader-wrapper small active valign" style="left: 75px">
-				<div class="spinner-layer spinner-green-only">
-					<div class="circle-clipper left">
-						<div class="circle"></div>
-					</div><div class="gap-patch">
-						<div class="circle"></div>
-					</div>
-					<div class="circle-clipper right">
-						<div class="circle"></div>
+		<div id="video-localstream" class="fixed-action-btn" style="bottom: 15px; right: 190px;">
+			<div id="my-video" class="z-depth-1 valign-wrapper" style="height: 108px; width: 192px;">
+				<div ng-show="loadingLocal" class="preloader-wrapper small active valign" style="left: 75px">
+					<div class="spinner-layer spinner-green-only">
+						<div class="circle-clipper left">
+							<div class="circle"></div>
+						</div><div class="gap-patch">
+							<div class="circle"></div>
+						</div>
+						<div class="circle-clipper right">
+							<div class="circle"></div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class="fixed-action-btn" style="bottom: 45px; right: 90px;">
-		<a ng-click="endCall()" class="btn btn-floating btn-large waves-light red">
-			<i class="large material-icons">call_end</i>
-		</a> 
-	</div>
-	<div ng-show="!isRecording" class="fixed-action-btn" style="bottom: 45px; right: 24px;">
-		<a ng-click="record()" class="btn btn-floating btn-large grey">
-			<i class="large material-icons red-text">lens</i>
-		</a> 
-	</div>
-	<div ng-show="isRecording" class="fixed-action-btn" style="bottom: 45px; right: 24px;">
-		<a ng-click="stopRecord()" class="btn btn-floating btn-large grey">
-			<i class="large material-icons red-text">stop</i>
-		</a>
+		<div class="fixed-action-btn" style="bottom: 45px; right: 90px;">
+			<a ng-click="endCall()" class="btn btn-floating btn-large waves-light red">
+				<i class="large material-icons">call_end</i>
+			</a> 
+		</div>
+		<div ng-show="!isRecording" class="fixed-action-btn" style="bottom: 45px; right: 24px;">
+			<a ng-click="record()" class="btn btn-floating btn-large grey">
+				<i class="large material-icons red-text">lens</i>
+			</a> 
+		</div>
+		<div ng-show="isRecording" class="fixed-action-btn" style="bottom: 45px; right: 24px;">
+			<a ng-click="stopRecord()" class="btn btn-floating btn-large grey">
+				<i class="large material-icons red-text">stop</i>
+			</a>
+		</div>
 	</div>
 </div>

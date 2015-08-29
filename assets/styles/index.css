@@ -76,3 +76,18 @@ body {
 .msg-data-container {
 	margin: 6px 0px 6px 0px;
 }
+
+#video-pull {
+	background-color: #444;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	z-index: -100;
+}
+
+#waiting {
+	margin-top: 18%;
+	margin-left: 30%;
+}

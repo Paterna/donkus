@@ -4,7 +4,7 @@
 			This is the beginning of the channel <b>#{{ channel.name }}</b> in team <b>{{ teamName }}</b>. Created on <b>{{ channelCreatedAt }}</b>.
 		</div>
 		<div class="row">
-			<div class="col s12 msg-container" ng-repeat="msg in msgHistory | orderBy:'createdAt'">
+			<div class="col s12 msg-container" ng-repeat="msg in msgHistory | orderBy:'createdAt' | limitTo: msgLimit">
 				<div class="col s12 msg-day" ng-show="msg.day != msgHistory[$index-1].day">
 					{{ msg.day }}
 					<span ng-show="msg.year != msgHistory[$index-1].year">{{ msg.year }}</span>
