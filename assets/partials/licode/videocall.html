@@ -4,7 +4,7 @@
 			
 		</div>
 		<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn" style="top: 90px; left: 250px;">
-			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1" style="height: 108px; width: 192px;">
+			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1 valign-wrapper grey lighten-2" style="height: 108px; width: 192px;">
 				<div ng-show="loadingStream" class="preloader-wrapper small active valign" style="left: 75px">
 					<div class="spinner-layer spinner-green-only">
 						<div class="circle-clipper left">
@@ -30,8 +30,8 @@
 				<div class="indeterminate green darken-3"></div>
 			</div>
 		</div>
-		<div id="video-localstream" class="fixed-action-btn" style="bottom: 15px; right: 190px;">
-			<div id="my-video" class="z-depth-1 valign-wrapper" style="height: 108px; width: 192px;">
+		<div id="video-localstream" class="fixed-action-btn">
+			<div id="my-video" class="z-depth-1 valign-wrapper grey lighten-2">
 				<div ng-show="loadingLocal" class="preloader-wrapper small active valign" style="left: 75px">
 					<div class="spinner-layer spinner-green-only">
 						<div class="circle-clipper left">

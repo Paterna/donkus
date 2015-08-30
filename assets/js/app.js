@@ -165,7 +165,30 @@ app.run(['$rootScope', '$http', '$state',
          * $rootScope.user = something -> Este es nuestro usuario actual.
          */
         $rootScope.user = undefined;
-        // $rootScope.rooms = [];
+        /*
+         * --- TODO: Subscrube to all rooms ---
+         *
+         * $rootScope.rooms = [];
+         * $rootScope.rooms
+         * .then(function (rooms) {
+         *     var tokens = [];
+         *     rooms.forEach(function (room) {
+         *         tokens.push($http.post('/api/licode/token/create/' + room, {
+         *             role: 'viewer'
+         *         }));
+         *     });
+         *     return $q.all([rooms, tokens]);
+         * })
+         * .spread(function (rooms, tokens) {
+         *     rooms.forEach(function (room, idx) {
+         *         room = Erizo.Room({ token: tokens[idx] });
+         * 
+         *         room.connect();
+         *     })
+         * })
+         *
+         * ------------------------------------
+         */
 
         $rootScope.logout = function () {
             $http.delete('/api/user')
@@ -449,16 +472,25 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         $scope.teamName = null;
         $scope.users = null;
         $scope.msgHistory = [];
-        $scope.msgLimit = 10;
-
-        document.getElementById('board').addEventListener("scroll", function (event) {
-            if (event.srcElement.scrollTop == 0) {
-                setTimeout(function () {
-                    $scope.msgLimit += 10;
-                    $scope.$apply();
-                }, 1000);
-            }
-        });
+        
+        /*
+         * --- TODO: FILTER LIMIT ---
+         * 
+         * $scope.msgLimit = 10;
+         * $scope.limitBegin = 0;
+         *
+         * document.getElementById('board').addEventListener("scroll", function (event) {
+         *     if (event.srcElement.scrollTop == 0) {
+         *         setTimeout(function () { 
+         *             $scope.msgLimit += 10;
+         *             $scope.limitBegin = ($scope.limitBegin > $scope.msgLimit)? ($scope.limitBegin - 10) : 0;
+         *             $scope.$apply();
+         *         }, 1000);
+         *     }
+         * });
+         * 
+         * --------------------------
+         */
 
         var init = function() {
             if ($stateParams.channel) {
@@ -493,11 +525,16 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                         day: moment(streamEvent.msg.timestamp).format('Do MMMM'),
                                         createdAt: streamEvent.msg.timestamp
                                     });
-                                    // TODO: notify messages
-                                    // if (streamEvent.msg.authorID != $rootScope.user.id) {
-                                    //     var ch = 'ch' + streamEvent.msg.channelID;
-                                    //     document.getElementById(ch).style.display = 'inline';
-                                    // }
+                                    /*
+                                     * --- TODO: notify messages ---
+                                     *
+                                     * if (streamEvent.msg.authorID != $rootScope.user.id) {
+                                     *     var ch = 'ch' + streamEvent.msg.channelID;
+                                     *     document.getElementById(ch).style.display = 'inline';
+                                     * }
+                                     *
+                                     * -----------------------------
+                                     */
                                     $scope.$apply();
                                     document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                                 });
@@ -560,6 +597,8 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             }
                             room.connect();
                         });
+                        // FILTER LIMIT
+                        // $scope.limitBegin = (($scope.msgHistory.length - $scope.msgLimit) > 0)? ($scope.msgHistory.length - $scope.msgLimit) : 0;
                         localStream.init();
                         document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                     });
@@ -829,6 +868,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                         room.subscribe(stream);
                     }
                 }
+
                 room.addEventListener("room-connected", function (roomEvent) {
                     room.publish(localStream, { maxVideoBW: 300 });
                     roomEvent.streams.forEach(function (stream) {
@@ -861,19 +901,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                 });
 
                 room.addEventListener("stream-removed", function (streamEvent) {
-                    // Remove stream from DOM
-                    // $http.delete('/api/licode/room/' + room.roomID + '/delete')
-                    // .then(function (obj) {
-                    //     console.log("Room deleted:", obj)
-                    // })
-                    // .catch(function (err) {
-                    //     console.error("Error:", err);
-                    // });
-                    // stream = streamEvent.stream;
-                    // if (stream.elementID !== undefined) {
-                    //     // $('video-pull').remove($('subscribed' + stream.elementID));
-                    //     // $('video-pull').remove($('video'));
-                    // }
+
                 });
 
                 room.addEventListener("stream-failed", function (streamEvent){
@@ -882,15 +910,9 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                 });
 
                 room.connect();
-
-                //localStream.show("video");
             });
             localStream.init();
         }
-
-        // var joinCall = function (response) {
-
-        // }
 
         var getParameterByName = function (name) {
             name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
@@ -898,6 +920,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var results = regex.exec(location.search);
             return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
+
         init();
     }
 ]);
