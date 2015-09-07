@@ -16,7 +16,8 @@ module.exports = {
       if (!user)
         return res.api_error({ code: 6, message: 'Wrong email or password' });
       req.logIn(user, function(err) {
-        if (err) res.send(err);
+        if (err)
+          res.api_error(err);
         return res.api_ok(user);
       });
     })(req, res);
