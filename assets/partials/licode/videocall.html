@@ -1,22 +1,8 @@
 <div id="video-pull">
 	<div class="row">
-		<div id="active-video">
-			
-		</div>
-		<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn" style="top: 90px; left: 250px;">
-			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1 valign-wrapper grey lighten-2" style="height: 108px; width: 192px;">
-				<div ng-show="loadingStream" class="preloader-wrapper small active valign" style="left: 75px">
-					<div class="spinner-layer spinner-green-only">
-						<div class="circle-clipper left">
-							<div class="circle"></div>
-						</div><div class="gap-patch">
-							<div class="circle"></div>
-						</div>
-						<div class="circle-clipper right">
-							<div class="circle"></div>
-						</div>
-					</div>
-				</div>
+
+		<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn">
+			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1 valign-wrapper grey lighten-2 video-stream">
 				<div ng-show="!stream.hasVideo()" class="center-align">
 					<i class="material-icons medium white-text" style="margin-top: 25px">videocam_off</i>
 				</div>

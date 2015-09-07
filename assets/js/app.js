@@ -551,7 +551,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                 if (streamEvent.stream.hasVideo() || streamEvent.stream.hasAudio()) {
                                     swal({
                                         title: "Incoming call",
-                                        text:'In channel ' + $scope.channelName + '. Enter?',
+                                        text:'In channel ' + $scope.channel.name + '. Enter?',
                                         type: "info",
                                         showCancelButton: true,
                                         confirmButtonText: "Yes",
@@ -750,7 +750,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         $scope.stopRecord = null;
         $scope.recordID = null;
         $scope.loadingLocal = true;
-        $scope.loadingStream = false;
         $scope.loadingFirst = true;
 
         var init = function () {
@@ -886,16 +885,15 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                         stream.show("my-video");
                     }
                     else if (stream.pc) {
+                        console.log("awfqfqef");
                         clearTimeout(timeOut);
                         $scope.loadingFirst = false;
-                        $scope.loadingStream = false;
                         $scope.$apply();
                         stream.show("video" + stream.getID());
                     }
                 });
 
                 room.addEventListener("stream-added", function (streamEvent) {
-                    $scope.loadingStream = true;
                     $scope.streams.push(streamEvent.stream);
                     subscribeToStreams($scope.streams);
                 });
@@ -920,7 +918,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var results = regex.exec(location.search);
             return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
-
         init();
     }
 ]);
