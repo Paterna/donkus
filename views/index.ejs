@@ -12,10 +12,10 @@
 			</div>
 		</div>
 	</nav>
-	<div ng-show="user" class="container">
+	<div id="container-side" ng-show="user" class="container">
 		<a href="#" data-activates="slide-out" class="button-collapse top-nav full hide-on-large-only white-text"><i id="sidenav-icon" class="material-icons">dehaze</i></a>
 	</div>
-	<ul ng-show="user" id="slide-out" class="side-nav fixed grey lighten-4 hide-on-small-only hide-on-med-only">
+	<ul id="content-side" ng-show="user" id="slide-out" class="side-nav fixed grey lighten-4 hide-on-small-only hide-on-med-only">
 		<li class="grey accent-5">
 			<ul id="dropdown2" class="dropdown-content" style="z-index: 100">
 				<li><a class="btn transparent" style="box-shadow: none" href="/#/profile"><i class="material-icons left">perm_identity</i>profile</a></li>

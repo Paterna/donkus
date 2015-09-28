@@ -135,8 +135,12 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 require: { auth: true }
             });
 
-
-        
+        /*
+         * Interceptor de respuestas HTTP
+         * 
+         * Para adaptar las respuestas del servidor al formato definido en la API,
+         * descrito en responses/api_error.js y responses/api_ok.js
+         */
         var transformResponse = function(response) {
             var serverResponse = response.data;
 
@@ -753,6 +757,8 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         $scope.loadingFirst = true;
 
         var init = function () {
+            document.getElementById('container-side').style.display = "none";
+            document.getElementById('content-side').style.display = "none";
             $http.get('/api/channel/' + $stateParams.channel)
             .then(function (data) {
                 var roomID = data.channel.room;
@@ -833,6 +839,8 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                             });
                             localStream.close();
                             room.disconnect();
+                            document.getElementById('container-side').style.display = "block";
+                            document.getElementById('content-side').style.display = "block";
                             $state.go('channel', { channel: $stateParams.channel });
                         }
                     });

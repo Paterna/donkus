@@ -1,6 +1,5 @@
 <div id="video-pull">
 	<div class="row">
-
 		<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn">
 			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1 valign-wrapper grey lighten-2 video-stream">
 				<div ng-show="!stream.hasVideo()" class="center-align">
@@ -9,10 +8,10 @@
 			</div>
 		</div>
 		<div ng-show="loadingFirst" id="waiting">
-			<div class="col s12 m8 offset-m1">
+			<div class="col s12 m8">
 				<h3 class="white-text center-align">Calling...</h3>
 			</div>
-			<div class="col s12 m8 offset-m1 progress green lighten-3">
+			<div class="col s12 m8 progress green lighten-3">
 				<div class="indeterminate green darken-3"></div>
 			</div>
 		</div>
