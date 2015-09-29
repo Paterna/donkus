@@ -52,6 +52,15 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 controller: 'profileCtrl',
                 require: { auth: true }
             })
+            .state('settings', {
+                url: '/settings',
+                views: {
+                    'content': {
+                        templateUrl: 'partials/settings.html'
+                    }
+                },
+                require: { auth: true }
+            })
             .state('team', {
                 url: '/team/:team',
                 views: {
@@ -748,6 +757,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
         window.$scope = $scope;
         $scope.streams = [];
         $scope.stream = null;
+        $scope.localStream = null;
         $scope.endCall = null;
         $scope.isRecording = false;
         $scope.record = null;
@@ -785,6 +795,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 
             localStream.addEventListener("access-accepted", function () {
                 var stream = null;
+                $scope.localStream = localStream;
 
                 var timeOut = setTimeout(function () {
                     swal({

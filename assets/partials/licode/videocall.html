@@ -1,7 +1,7 @@
 <div id="video-pull">
 	<div class="row">
 		<div ng-show="!loadingFirst" id="video-streams" class="col s2 fixed-action-btn">
-			<div id="{{ 'video' + stream.getID() }}" class="z-depth-1 valign-wrapper grey lighten-2 video-stream">
+			<div ng-repeat="str in streams" id="{{ 'video' + str.getID() }}" ng-show="(str.getID() != localStream.getID()) || !str.hasVideo()" class="z-depth-1 valign-wrapper grey lighten-2 video-stream col" ng-class="s{{ 12/streams.length }}">
 				<div ng-show="!stream.hasVideo()" class="center-align">
 					<i class="material-icons medium white-text" style="margin-top: 25px">videocam_off</i>
 				</div>
