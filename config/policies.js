@@ -42,6 +42,14 @@ module.exports.policies = {
     create: 'requireSession'
     /* create: ['requireSession', 'belongsToTeam'] */
   },
+  MeesageController: {
+    getMessages: 'requireSession',
+    push: 'requireSession'
+  },
+  VideoController: {
+    getVideo: 'requireSession',
+    save: 'requireSession'
+  },
   LicodeController: {
     getCurrentRoom: 'requireSession',
     getRooms: 'requireSession',

@@ -122,3 +122,10 @@ body {
 	height: 100%;
 	width: 100%;
 }
+
+.notifier {
+	position: absolute;
+	top: 100px;
+	right: 50px;
+	z-index: 1000;
+}

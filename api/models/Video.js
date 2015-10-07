@@ -15,6 +15,10 @@ module.exports = {
 		url: {
 			type: 'string',
 			required: true
+		},
+		recordId: {
+			type: 'float',
+			required: true
 		}
 		// data: {
 			

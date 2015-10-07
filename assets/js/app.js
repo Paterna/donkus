@@ -862,8 +862,10 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                         if (recordingId === undefined)
                             sweetAlert("Error!", error, "error");
                         else {
+                            Materialize.toast('Recording...', 5000);
                             $scope.recordID = recordingId;
                             $scope.isRecording = true;
+                            $scope.$apply();
                             console.log("Recording started, the id of the recording is ", recordingId);
                         }
                     });
@@ -875,6 +877,7 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                             sweetAlert("Error!", error, "error");
                         else {
                             $scope.isRecording = false;
+                            $scope.$apply();
                             console.log("Stopped recording!");
                         }
                     });
