@@ -9,13 +9,16 @@ module.exports = {
 
 	attributes: {
 		channel: {
-			model: 'channel'
+			model: 'channel',
+			required: true
 		},
 		data: {
-			type: 'string'
+			type: 'string',
+			required: true
 		},
 		author: {
-			model: 'user'
+			model: 'user',
+			required: true
 		}
 	}
 };
