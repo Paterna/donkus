@@ -862,11 +862,18 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
                         if (recordingId === undefined)
                             sweetAlert("Error!", error, "error");
                         else {
-                            Materialize.toast('Recording...', 5000);
-                            $scope.recordID = recordingId;
-                            $scope.isRecording = true;
-                            $scope.$apply();
-                            console.log("Recording started, the id of the recording is ", recordingId);
+                            $http.post('/api/video/record', {
+                                channel: $stateParams.channel,
+                                url: '/tmp/',
+                                recordId: recordingId
+                            })
+                            .then(function (video) {
+                                console.log('Video:', video);
+                                Materialize.toast('Recording...', 5000);
+                                $scope.recordID = video.recordId;
+                                $scope.isRecording = true;
+                                console.log("Recording started, the id of the recording is ", $scope.recordID);
+                            });
                         }
                     });
                 }

@@ -46,6 +46,10 @@ module.exports.routes = {
   'get /api/messages/:channel': 'MessageController.getMessages',
   'post /api/message/push/:channel': 'MessageController.push',
 
+  /* Video recording API routes */
+  'get /api/video/:recordid': 'VideoController.getVideo',
+  'post /api/video/record': 'VideoController.record',
+
   /* Licode API routes */
   // Rooms
   'get /api/licode/rooms': 'LicodeController.getRooms',
