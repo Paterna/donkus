@@ -133,6 +133,15 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 },
                 require: { auth: true }
             })
+            .state('call', {
+                url: '/call/:channel',
+                views: {
+                    'content': {
+                        templateUrl: 'partials/sip/call.html',
+                        controller: 'sipCtrl'
+                    }
+                }
+            })
             .state('videocall', {
                 url: '/videocall/:channel',
                 views: {
@@ -167,8 +176,8 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
         $httpProvider.interceptors.push( function() {
             return { response: transformResponse }
         });
-    }
-]);
+    }]
+);
 
 app.run(['$rootScope', '$http', '$state',
     function ($rootScope, $http, $state) {
@@ -179,7 +188,7 @@ app.run(['$rootScope', '$http', '$state',
          */
         $rootScope.user = undefined;
         /*
-         * --- TODO: Subscrube to all rooms ---
+         * --- TODO: Subscribe to all rooms ---
          *
          * $rootScope.rooms = [];
          * $rootScope.rooms
@@ -277,8 +286,8 @@ app.run(['$rootScope', '$http', '$state',
         });
 
         // $rootScope.rooms = $http.get('/api/licode/rooms');
-    }
-]);
+    }]
+);
 
 app.controller('appCtrl', ['$scope', '$state', 
     function ($scope, $state) {
@@ -291,8 +300,8 @@ app.controller('appCtrl', ['$scope', '$state',
 app.controller('profileCtrl', ['$scope', '$http',
     function ($scope, $http) {
 
-    }
-]);
+    }]
+);
 
 app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
     function ($scope, $rootScope, $http, $state) {
@@ -381,8 +390,8 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
                     console.log(err);
             });
         }
-    }
-]);
+    }]
+);
 
 
 app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
@@ -471,8 +480,8 @@ app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
         };
 
         init();
-    }
-]);
+    }]
+);
 
 app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$stateParams', '$q',
     function ($rootScope, $scope, $state, $http, $stateParams, $q) {
@@ -608,6 +617,15 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                 room.disconnect();
                                 $state.go('videocall', { channel: channelID });
                             }
+
+                            $scope.call = function(channelID) {
+                                room.unsubscribe(stream);
+                                room.unpublish(localStream);
+                                localStream.close();
+                                room.disconnect();
+                                $state.go('call', { channel: channelID });
+                            }
+
                             room.connect();
                         });
                         // FILTER LIMIT
@@ -693,8 +711,8 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
         };
 
         init();
-    }
-]);
+    }]
+);
 
 app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
     function ($scope, $state, $stateParams, $http) {
@@ -749,8 +767,8 @@ app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
             });
         }
         init();
-    }
-]);
+    }]
+);
 
 app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
     function ($scope, $state, $stateParams, $http) {
@@ -947,9 +965,99 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var results = regex.exec(location.search);
             return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
+
         init();
-    }
-]);
+    }]
+);
+
+app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
+    function ($scope, $state, $stateParams, $http) {
+        
+        console.log("Iniciando llamada SIP...");
+
+        var init = function() {
+            $http.get('/api/channel/' + $stateParams.channel)
+            .then(function (data) {
+                var roomID = data.channel.room;
+                var room = $http.get('/api/licode/room/' + roomID);
+                return room;
+            })
+            .then(function (room) {
+                var token = $http.post('/api/licode/token/create/' + room._id, { role: 'presenter' });
+                return token;
+            })
+            .then(startSipCall)
+            .catch(function (err) {
+                sweetAlert("Error!", "Something went wrong", "error");
+                console.error(err);
+            });
+        }
+
+        var startSipCall = function(token) {
+            var localStream;
+            var config = { audio: true, video: false, data: false };
+
+            localStream = Erizo.Stream(config);
+
+            var room = Erizo.Room({ token: token });
+
+
+            room.addEventListener("room-connected", function(event) {
+                $http.post('/api/sipsession/publishconf', {
+                    spec: {
+                        room: room
+                    },
+                    stream: localStream
+                })
+                .then(function() {
+                    console.log("\nSubscribing\n");
+                    subscribeToStreams(event.streams);
+                })
+                .catch(console.log);
+            });
+
+            room.addEventListener("stream-added", function (event) {
+                console.log('New stream added:', event.stream.getID());
+                //TODO: Currently we only subscribe when we have established a publish call
+                var streams = [];
+
+                streams.push(event.stream);
+                subscribeToStreams(streams);
+                /*
+                if (localId!==undefined && localId!==event.stream.getID()){ 
+                console.log("Disparando subscribe desde erizo");
+                theSession.subscribeFromErizo({}, event.stream)
+                };
+                */
+            });
+            
+            $http.post('/api/sipsession/', { spec: { room: room } })
+            .then(function () {
+                console.log("Trying to connect to room...");
+                room.connect();
+            })
+            .catch(console.log);
+        }
+
+        var subscribeToStreams = function (streams) {
+            for (var stream in streams) {
+                var theStream = streams[stream];
+                console.log("Stream:", theStream);
+                if (localStream.getID() !== theStream.getID()) {
+                    $http.post('/api/sipsession/subscribe', {
+                        spec: {
+                            room: room
+                        },
+                        theStream: theStream
+                    })
+                    .catch(console.log);
+                }
+            }
+        };
+
+        init();
+    }]
+);
 
 app.directive('ngEnter', function () {
     return function (scope, element, attrs) {

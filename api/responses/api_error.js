@@ -7,7 +7,8 @@
  * 6 -> Auth error
  * 1X -> Licode Room error
  * 2X -> Licode User error
- * 
+ * 5X -> SIP Session error
+ *
  */
 module.exports = function (err, options) {
 	

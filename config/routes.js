@@ -59,5 +59,10 @@ module.exports.routes = {
   'delete /api/licode/room/:room/delete': 'LicodeController.deleteRoom',
   // Users
   'post /api/licode/token/create/:room': 'LicodeController.createToken',
-  'get /api/licode/users/:room': 'LicodeController.getUsers'
+  'get /api/licode/users/:room': 'LicodeController.getUsers',
+
+  /* SIP session API routes */
+  'post /api/sipsession': 'SipController.getSession',
+  'post /api/sipsession/publishconf': 'SipController.publishConf',
+  'post /api/sipsession/subscribe': 'SipController.subscribe'
 };
