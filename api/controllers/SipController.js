@@ -7,6 +7,7 @@
 
 var sipMgr = require('../../api/services/SipSession.js');
 var fs_cli = require('../../api/services/fs_cli_adaptor.js');
+var Erizo = require('../../api/services/erizofc.js');
 
 module.exports = {
 
@@ -14,25 +15,24 @@ module.exports = {
         var spec = req.body.spec;
 
         try {
-            theSession = sipMgr.SipErizoSession(spec);
-            theSession.createSession({}, function() {
+            session = sipMgr.SipErizoSession(spec);
+            global.session = session;
+            session.createSession({}, function() {
                 console.log("Session created");
                 res.api_ok();
             });
         } catch(e) {
             res.api_error({ code: 50, msg: "Error getting SipSession: " + e});
         }
-
-        // res.api_error({ code: 50, msg: "Error getting SIP session"});
     },
     publishConf: function (req, res) {
-        console.log("\nPublishConf\n");
-        var spec = req.body.spec;
-        var localStream = req.body.stream;
+        var localStream;
+        var config = { audio: true, video: false, data: false };
+
+        localStream = Erizo.Stream(config);
 
         try {
-            theSession = sipMgr.SipErizoSession(spec);
-            theSession.publishConfToErizo({}, localStream, function(id) {
+            session.publishConfToErizo({}, localStream, function(id) {
                 console.log("\nPublishCall established\n", id);
                 localID = id;
                 setTimeout(function() {
@@ -45,10 +45,10 @@ module.exports = {
         }
     },
     subscribe: function (req, res) {
-        var spec = req.body.spec;
-        var theStream = req.body.theStream;
+        var stream = req.body.stream;
+
         try {
-            theSession.subscribeFromErizo({}, theStream, function (streamId) {
+            session.subscribeFromErizo({}, stream, function (streamId) {
                 console.log("\nNew stream added to SIP\n", streamId);
                 setTimeout( function(){
                     fs_cli.update_fs();

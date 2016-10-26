@@ -1002,18 +1002,13 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
             var room = Erizo.Room({ token: token });
 
 
-            room.addEventListener("room-connected", function(event) {
-                $http.post('/api/sipsession/publishconf', {
-                    spec: {
-                        room: room
-                    },
-                    stream: localStream
-                })
+            room.addEventListener("room-connected", function (event) {
+                $http.post('/api/sipsession/publishconf')
                 .then(function() {
                     console.log("\nSubscribing\n");
                     subscribeToStreams(event.streams);
                 })
-                .catch(console.log);
+                .catch(console.log  );
             });
 
             room.addEventListener("stream-added", function (event) {
@@ -1045,10 +1040,7 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
                 console.log("Stream:", theStream);
                 if (localStream.getID() !== theStream.getID()) {
                     $http.post('/api/sipsession/subscribe', {
-                        spec: {
-                            room: room
-                        },
-                        theStream: theStream
+                        stream: theStream
                     })
                     .catch(console.log);
                 }
