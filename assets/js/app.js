@@ -1,7 +1,4 @@
-var app = angular.module('app', [
-    'ui.router',
-    '$q-spread'
-]);
+var app = angular.module('app', ['ui.router', '$q-spread']);
 
 app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
     function ($stateProvider, $urlRouterProvider, $httpProvider) {
@@ -392,7 +389,6 @@ app.controller('AuthCtrl', ['$scope', '$rootScope', '$http', '$state',
         }
     }]
 );
-
 
 app.controller('teamsCtrl', ['$scope', '$http', '$state', '$stateParams',
     function ($scope, $http, $state, $stateParams) {
@@ -1001,16 +997,6 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
 
             var room = Erizo.Room({ token: token });
 
-
-            room.addEventListener("room-connected", function (event) {
-                $http.post('/api/sipsession/publishconf')
-                .then(function() {
-                    console.log("\nSubscribing\n");
-                    subscribeToStreams(event.streams);
-                })
-                .catch(console.log  );
-            });
-
             room.addEventListener("stream-added", function (event) {
                 console.log('New stream added:', event.stream.getID());
                 //TODO: Currently we only subscribe when we have established a publish call
@@ -1029,6 +1015,25 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
             $http.post('/api/sipsession/', { spec: { room: room } })
             .then(function () {
                 console.log("Trying to connect to room...");
+                room.addEventListener("room-connected", function (event) {
+                    var stream = JSON.stringify(localStream, function (key, values) {
+                        string = "";
+                        for (val in values) {
+                            string += '' + val + '; ';
+                        }
+                        return string;
+                    });
+
+                    console.log("Stream:", stream);
+                    $http.post('/api/sipsession/publishconf', {
+                        stream: stream
+                    })
+                    .then(function() {
+                        console.log("\nSubscribing\n");
+                        subscribeToStreams(event.streams);
+                    })
+                    .catch(console.log  );
+                });
                 room.connect();
             })
             .catch(console.log);

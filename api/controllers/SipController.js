@@ -7,7 +7,6 @@
 
 var sipMgr = require('../../api/services/SipSession.js');
 var fs_cli = require('../../api/services/fs_cli_adaptor.js');
-var Erizo = require('../../api/services/erizofc.js');
 
 module.exports = {
 
@@ -22,14 +21,13 @@ module.exports = {
                 res.api_ok();
             });
         } catch(e) {
-            res.api_error({ code: 50, msg: "Error getting SipSession: " + e});
+            res.api_error({ code: 50, message: "Error getting SipSession: " + e});
         }
     },
     publishConf: function (req, res) {
-        var localStream;
-        var config = { audio: true, video: false, data: false };
+        var localStream = req.body.stream;
 
-        localStream = Erizo.Stream(config);
+        console.log("localStream:", localStream);
 
         try {
             session.publishConfToErizo({}, localStream, function(id) {
@@ -41,7 +39,7 @@ module.exports = {
                 res.api_ok();
             });
         } catch(e) {
-            res.api_error({ code: 51, msg: "Error publishing configuration to Erizo: " + e});
+            res.api_error({ code: 51, message: "Error publishing configuration to Erizo: " + e});
         }
     },
     subscribe: function (req, res) {
@@ -56,7 +54,7 @@ module.exports = {
                 res.api_ok();
             })
         } catch(e) {
-            res.api_error({ code: 52, msg: "Error subscribing from Erizo: " + e});
+            res.api_error({ code: 52, message: "Error subscribing from Erizo: " + e});
         }
     }
 };
