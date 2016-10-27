@@ -1,5 +1,6 @@
 var SIP = require ('sip.js');
 var Erizo = require('./erizofc.js');
+var config = require('../../config/licode');
 
 exports.SipErizoSession = function(spec) {
     var that = {},
@@ -10,7 +11,8 @@ exports.SipErizoSession = function(spec) {
 
 
 //    var config = spec.sipConfig;
-    var sipUser = 1001;
+    var sipUser = config.sip_session.erizo_user;
+    var DOMAIN = config.sip_session.domain;
 
     var setDescriptionErizo = function(msg, session) {
         console.log("Es un invite y me llega el answer");
@@ -59,11 +61,11 @@ exports.SipErizoSession = function(spec) {
 
     that.createSession = function (options, readyCallback) {
         var config = {
-            uri: sipUser+'@10.0.2.15',
+            uri: sipUser+'@' + DOMAIN,
             register: true,
-            wsServers: 'ws://10.0.2.15:5066',
+            wsServers: 'ws://' + DOMAIN + ':5066',
             authorizationUser: sipUser,
-            password: '9999',
+            password: '1234',
             mediaHandlerFactory: ErizoMediaHandler.defaultFactory,
             log:{ level: "debug" }
         };
@@ -97,7 +99,7 @@ exports.SipErizoSession = function(spec) {
         if (ready){
             console.log("Inviting");
             //3001 conf
-            var session = userAgent.invite('3001@10.0.2.15', {media:{erizoStream:stream, type:'publish'}});
+            var session = userAgent.invite('3001@' + DOMAIN, {media:{erizoStream:stream, type:'publish'}});
             session.on('accepted', function(){
                 callback(session.data.erizoStream.getID());
             });
@@ -106,7 +108,7 @@ exports.SipErizoSession = function(spec) {
 
     that.subscribeFromErizo = function (options, stream, callback) {
         console.log("Trying to subscribe from Erizo");
-        var session = userAgent.invite('3001@10.0.2.15', {media:{erizoStream:stream, type:'subscribe'}});
+        var session = userAgent.invite('3001@' + DOMAIN, {media:{erizoStream:stream, type:'subscribe'}});
         session.on('accepted', function() {
             callback(session.data.erizoStream.getID());
         });

@@ -128,6 +128,10 @@ config.erizo.stunport = 0; // default value: 0
 config.erizo.minport = 0; // default value: 0
 config.erizo.maxport = 0; // default value: 0
 
+//SIP server session
+config.sip_session.domain = ; // String format SIP domain
+config.sip_session.erizo_user = ; 
+
 /***** END *****/
 // Following lines are always needed.
 var module = module || {};
