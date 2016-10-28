@@ -5,8 +5,8 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-var sipMgr = require('../../api/services/SipSession.js');
-var fs_cli = require('../../api/services/fs_cli_adaptor.js');
+var sipMgr = require('../services/SipSession.js');
+var fs_cli = require('../services/fs_cli_adaptor.js');
 
 module.exports = {
 
@@ -25,12 +25,11 @@ module.exports = {
         }
     },
     publishConf: function (req, res) {
-        var localStream = req.body.stream;
-
-        console.log("localStream:", localStream);
+        var stream = req.body.stream;
+        console.log("stream:", stream);
 
         try {
-            session.publishConfToErizo({}, localStream, function(id) {
+            session.publishConfToErizo({}, stream, function(id) {
                 console.log("\nPublishCall established\n", id);
                 localID = id;
                 setTimeout(function() {

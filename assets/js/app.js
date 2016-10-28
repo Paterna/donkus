@@ -969,14 +969,16 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
 app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
     function ($scope, $state, $stateParams, $http) {
         
-        console.log("Iniciando llamada SIP...");
+        console.log("Iniciando sesión SIP...");
+
+        var room;
 
         var init = function() {
             $http.get('/api/channel/' + $stateParams.channel)
             .then(function (data) {
                 var roomID = data.channel.room;
-                var room = $http.get('/api/licode/room/' + roomID);
-                return room;
+                var ch_room = $http.get('/api/licode/room/' + roomID);
+                return ch_room;
             })
             .then(function (room) {
                 var token = $http.post('/api/licode/token/create/' + room._id, { role: 'presenter' });
@@ -990,12 +992,18 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
         }
 
         var startSipCall = function(token) {
-            var localStream;
-            var config = { audio: true, video: false, data: false };
+            var config = {
+                audio: false,
+                video: false,
+                data: true,
+                attributes: {
+                    type: 'sipstream'
+                }
+            };
 
-            localStream = Erizo.Stream(config);
+            var localStream = Erizo.Stream(config);
 
-            var room = Erizo.Room({ token: token });
+            room = Erizo.Room({ token: token });
 
             room.addEventListener("stream-added", function (event) {
                 console.log('New stream added:', event.stream.getID());
@@ -1016,17 +1024,9 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
             .then(function () {
                 console.log("Trying to connect to room...");
                 room.addEventListener("room-connected", function (event) {
-                    var stream = JSON.stringify(localStream, function (key, values) {
-                        string = "";
-                        for (val in values) {
-                            string += '' + val + '; ';
-                        }
-                        return string;
-                    });
-
-                    console.log("Stream:", stream);
+                    console.log("stream:", localStream);
                     $http.post('/api/sipsession/publishconf', {
-                        stream: stream
+                        stream: localStream
                     })
                     .then(function() {
                         console.log("\nSubscribing\n");
@@ -1040,16 +1040,16 @@ app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
         }
 
         var subscribeToStreams = function (streams) {
-            for (var stream in streams) {
-                var theStream = streams[stream];
-                console.log("Stream:", theStream);
-                if (localStream.getID() !== theStream.getID()) {
-                    $http.post('/api/sipsession/subscribe', {
-                        stream: theStream
-                    })
-                    .catch(console.log);
-                }
-            }
+            // for (var stream in streams) {
+            //     var theStream = streams[stream];
+            //     console.log("Stream:", theStream);
+            //     if (localStream.getID() !== theStream.getID()) {
+            //         $http.post('/api/sipsession/subscribe', {
+            //             stream: theStream
+            //         })
+            //         .catch(console.log);
+            //     }
+            //}
         };
 
         init();
