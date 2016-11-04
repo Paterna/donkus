@@ -6,6 +6,9 @@
  */
 var N = require('../services/nuve.min.js');
 var config = require('../../config/licode');
+var Erizo = require('../services/erizofc.js');
+var sipMgr = require('../services/SipSession.js');
+var fs_cli = require('../services/fs_cli_adaptor.js');
 
 N.API.init(config.nuve.superserviceID, config.nuve.superserviceKey, 'http://localhost:3000/');
 
@@ -100,5 +103,70 @@ module.exports = {
         }, function (err) {
         	res.api_error({ code: 22, message: err });
         });
+    },
+    setSipSession: function (req, res) {
+        var room = req.body.room;
+        var spec = {};
+        var session;
+        var localID;
+
+        var localStream = Erizo.Stream({
+            audio: false,
+            video: false,
+            data: true,
+            attributes: {
+                type: 'sipstream'
+            }
+        });
+
+        console.log("Room:", room);
+        N.API.createToken(room, "SIP_GW", "presenter", function (token) {
+            console.log("Token created for SIP session:", token);
+            siproom = Erizo.Room({ token: token });
+            
+            siproom.addEventListener("room-connected", function (event) {
+                console.log("Connected to room", siproom);
+
+                session.publishConfToErizo({}, localStream, function (id) {
+                    console.log("\nPublishCall established\n", id);
+                    localID = id;
+                    setTimeout(function() {
+                        fs_cli.update_fs();
+                    }, 2000);
+                    subscribeToStreams(event.streams);
+                });
+            });
+
+            siproom.addEventListener("stream-added", function (event) {
+                console.log('Stream added:', event.stream.getID());
+
+                var streams = [];
+                streams.push(event.stream);
+                subscribeToStreams(streams);
+            });
+            
+            spec = { room: siproom };
+            session = sipMgr.SipErizoSession(spec);
+
+            session.createSession({}, function() {
+                console.log("Session created");
+                siproom.connect();
+            });
+        }, function (err) {
+            console.log(err);
+        });
+
+        var subscribeToStreams = function (streams) {
+            for (var s in streams) {
+                if (localStream.getID() !== s.getID()) {
+                    session.subscribeFromErizo({}, s, function (streamID) {
+                        console.log("New stream added to SIP:", streamId);
+                        setTimeout( function(){
+                            fs_cli.update_fs();
+                        }, 2000);
+                    })
+                }
+            }
+        }
     }
 };

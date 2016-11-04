@@ -9,8 +9,6 @@ exports.SipErizoSession = function(spec) {
 
     var room = spec.room;
 
-
-//    var config = spec.sipConfig;
     var sipUser = config.sip_session.erizo_user;
     var DOMAIN = config.sip_session.domain;
 
@@ -27,7 +25,7 @@ exports.SipErizoSession = function(spec) {
         session.data.erizoStream = mediaHints.erizoStream;
         console.log("session data:", session.data);
         try {
-            if (mediaHints.type==='publish') {
+            if (mediaHints.type === 'publish') {
                 theMsg = {}
                 room.publish(session.data.erizoStream, { createOffer: true }, function(data) {
                     console.log("callback del publish", session.data.erizoStream.getID());
@@ -104,7 +102,13 @@ exports.SipErizoSession = function(spec) {
         if (ready){
             console.log("Inviting");
             //3001 conf
-            var session = userAgent.invite('3001@' + DOMAIN, {media:{erizoStream:stream, type:'publish'}});
+            var session = userAgent.invite('3001@' + DOMAIN, {
+                media: {
+                    erizoStream:stream,
+                    type:'publish'
+                }
+            });
+
             session.on('accepted', function(){
                 callback(session.data.erizoStream.getID());
             });

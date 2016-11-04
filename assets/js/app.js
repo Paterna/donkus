@@ -514,8 +514,20 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
             if ($stateParams.channel) {
                 getChannel($stateParams.channel)
                 .then(function (channel) {
+
+                    $http.post('/api/licode/sipsession', {
+                        room: channel.room
+                    });
+
                     createToken(channel.room, 'presenter', function (token) {
-                        var localStream = Erizo.Stream({ audio: false, video: false, data: true });
+                        var localStream = Erizo.Stream({
+                            audio: false,
+                            video: false,
+                            data: true,
+                            attributes: {
+                                type: 'sipstream'
+                            }
+                        });
 
                         room = Erizo.Room({ token: token });
 
@@ -621,7 +633,6 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                                 room.disconnect();
                                 $state.go('call', { channel: channelID });
                             }
-
                             room.connect();
                         });
                         // FILTER LIMIT
@@ -629,6 +640,8 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                         localStream.init();
                         document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                     });
+
+
                 })
                 .catch(function (err) {
                     sweetAlert("Error!", err.message, "error");
