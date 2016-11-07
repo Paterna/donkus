@@ -7,6 +7,7 @@
 var N = require('../services/nuve.min.js');
 var config = require('../../config/licode');
 var Erizo = require('../services/erizofc.js');
+var chCtrl = require('./ChannelController');
 var sipMgr = require('../services/SipSession.js');
 var fs_cli = require('../services/fs_cli_adaptor.js');
 
@@ -42,41 +43,41 @@ module.exports = {
         N.API.getRooms(function (rooms) {
             res.api_ok(JSON.parse(rooms));
         }, function (err) {
-        	res.api_error({ code: 11, message: err });
+            res.api_error({ code: 11, message: err });
         });
     },
     getRoom: function(req, res) {
-    	"use strict";
-    	var room = req.params.room;
+        "use strict";
+        var room = req.params.room;
 
-    	N.API.getRoom(room, function (room) {
-    		res.api_ok(JSON.parse(room));
-    	}, function (err) {
-    		res.api_error({ code: 12, message: err });
-    	});
+        N.API.getRoom(room, function (room) {
+            res.api_ok(JSON.parse(room));
+        }, function (err) {
+            res.api_error({ code: 12, message: err });
+        });
     },
     createRoom: function(req, res) {
-    	"use strict";
-    	var roomName = req.body.name;
-    	// See Create Rooms documentation in http://lynckia.com/licode/server-api.html
-    	var options = req.body.options || {};
+        "use strict";
+        var roomName = req.body.name;
+        // See Create Rooms documentation in http://lynckia.com/licode/server-api.html
+        var options = req.body.options || {};
 
-    	N.API.createRoom(roomName, function (room) {
+        N.API.createRoom(roomName, function (room) {
             console.log("Room created correctly:", room);
-    		res.api_ok(room);
-    	}, function (err) {
-    		res.api_error({ code: 13, message: err });
-    	}, options);
+            res.api_ok(room);
+        }, function (err) {
+            res.api_error({ code: 13, message: err });
+        }, options);
     },
     deleteRoom: function(req, res) {
-    	"use strict";
-    	var room = req.params.room;
+        "use strict";
+        var room = req.params.room;
 
-    	N.API.deleteRoom(room, function (result) {
-    		res.api_ok(result);
-    	}, function (err) {
-    		res.api_error({ code: 14, message: err });
-    	});
+        N.API.deleteRoom(room, function (result) {
+            res.api_ok(result);
+        }, function (err) {
+            res.api_error({ code: 14, message: err });
+        });
     },
     createToken: function(req, res) {
         "use strict";
@@ -95,18 +96,18 @@ module.exports = {
         "use strict";
         var room = req.params.room;
         N.API.getUsers(room, function (userslist) {
-        	var users = JSON.parse(userslist);
-        	if (users.length < 1)
-        		res.api_error({ code:21, message: "There are not users in this room" });
-        	else
-            	res.api_ok(users);
+            var users = JSON.parse(userslist);
+            if (users.length < 1)
+                res.api_error({ code:21, message: "There are not users in this room" });
+            else
+                res.api_ok(users);
         }, function (err) {
-        	res.api_error({ code: 22, message: err });
+            res.api_error({ code: 22, message: err });
         });
     },
     setSipSession: function (req, res) {
-        var room = req.body.room;
-        var spec = {};
+        var roomID = req.body.roomID;
+        var room;
         var session;
         var localID;
 
@@ -119,13 +120,15 @@ module.exports = {
             }
         });
 
-        console.log("Room:", room);
-        N.API.createToken(room, "SIP_GW", "presenter", function (token) {
+        console.log("RoomID for SIP channel:", roomID);
+        N.API.createToken(roomID, "SIP_GW", "presenter", function (token) {
             console.log("Token created for SIP session:", token);
-            siproom = Erizo.Room({ token: token });
-            
-            siproom.addEventListener("room-connected", function (event) {
-                console.log("Connected to room", siproom);
+            console.log("In room: ", roomID);
+
+            room = Erizo.Room({ token: token });
+
+            room.addEventListener("room-connected", function (event) {
+                console.log("Connected to room");
 
                 session.publishConfToErizo({}, localStream, function (id) {
                     console.log("\nPublishCall established\n", id);
@@ -137,20 +140,19 @@ module.exports = {
                 });
             });
 
-            siproom.addEventListener("stream-added", function (event) {
+            room.addEventListener("stream-added", function (event) {
                 console.log('Stream added:', event.stream.getID());
 
                 var streams = [];
                 streams.push(event.stream);
                 subscribeToStreams(streams);
             });
-            
-            spec = { room: siproom };
-            session = sipMgr.SipErizoSession(spec);
+
+            session = sipMgr.SipErizoSession({ room: room });
 
             session.createSession({}, function() {
-                console.log("Session created");
-                siproom.connect();
+                console.log("Trying to connect to SIP room...");
+                room.connect();
             });
         }, function (err) {
             console.log(err);

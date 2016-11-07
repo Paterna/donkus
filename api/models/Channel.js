@@ -21,6 +21,9 @@ module.exports = {
 		},
 		room: {
 			model: 'room'
+		},
+		sip: {
+			type: 'boolean'
 		}
 	}
 };

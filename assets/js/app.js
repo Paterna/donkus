@@ -514,19 +514,17 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
             if ($stateParams.channel) {
                 getChannel($stateParams.channel)
                 .then(function (channel) {
-
-                    $http.post('/api/licode/sipsession', {
-                        room: channel.room
-                    });
-
+                    if (channel.sip) {
+                        console.log("Canal compatible con llamadas SIP");
+                        $http.post('/api/licode/sipsession', {
+                            roomID: channel.room
+                        });
+                    }
                     createToken(channel.room, 'presenter', function (token) {
                         var localStream = Erizo.Stream({
                             audio: false,
                             video: false,
-                            data: true,
-                            attributes: {
-                                type: 'sipstream'
-                            }
+                            data: true
                         });
 
                         room = Erizo.Room({ token: token });
@@ -688,7 +686,7 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
             });
         }
 
-        $scope.create = function(channelName, description) {
+        $scope.create = function(channelName, description, sip) {
             $http.post('/api/licode/room/create', {
                 name: (channelName + 'Room').replace(' ', '_')
             })
@@ -698,7 +696,8 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                     name: channelName,
                     team: $stateParams.team,
                     room: room,
-                    desc: description
+                    desc: description,
+                    sip: sip
                 };
                 var channel = $http.post('/api/channel/create', channelBody);
 
@@ -974,96 +973,6 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             var results = regex.exec(location.search);
             return (results == null) ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
-
-        init();
-    }]
-);
-
-app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$http',
-    function ($scope, $state, $stateParams, $http) {
-        
-        console.log("Iniciando sesión SIP...");
-
-        var room;
-
-        var init = function() {
-            $http.get('/api/channel/' + $stateParams.channel)
-            .then(function (data) {
-                var roomID = data.channel.room;
-                var ch_room = $http.get('/api/licode/room/' + roomID);
-                return ch_room;
-            })
-            .then(function (room) {
-                var token = $http.post('/api/licode/token/create/' + room._id, { role: 'presenter' });
-                return token;
-            })
-            .then(startSipCall)
-            .catch(function (err) {
-                sweetAlert("Error!", "Something went wrong", "error");
-                console.error(err);
-            });
-        }
-
-        var startSipCall = function(token) {
-            var config = {
-                audio: false,
-                video: false,
-                data: true,
-                attributes: {
-                    type: 'sipstream'
-                }
-            };
-
-            var localStream = Erizo.Stream(config);
-
-            room = Erizo.Room({ token: token });
-
-            room.addEventListener("stream-added", function (event) {
-                console.log('New stream added:', event.stream.getID());
-                //TODO: Currently we only subscribe when we have established a publish call
-                var streams = [];
-
-                streams.push(event.stream);
-                subscribeToStreams(streams);
-                /*
-                if (localId!==undefined && localId!==event.stream.getID()){ 
-                console.log("Disparando subscribe desde erizo");
-                theSession.subscribeFromErizo({}, event.stream)
-                };
-                */
-            });
-            
-            $http.post('/api/sipsession/', { spec: { room: room } })
-            .then(function () {
-                console.log("Trying to connect to room...");
-                room.addEventListener("room-connected", function (event) {
-                    console.log("stream:", localStream);
-                    $http.post('/api/sipsession/publishconf', {
-                        stream: localStream
-                    })
-                    .then(function() {
-                        console.log("\nSubscribing\n");
-                        subscribeToStreams(event.streams);
-                    })
-                    .catch(console.log  );
-                });
-                room.connect();
-            })
-            .catch(console.log);
-        }
-
-        var subscribeToStreams = function (streams) {
-            // for (var stream in streams) {
-            //     var theStream = streams[stream];
-            //     console.log("Stream:", theStream);
-            //     if (localStream.getID() !== theStream.getID()) {
-            //         $http.post('/api/sipsession/subscribe', {
-            //             stream: theStream
-            //         })
-            //         .catch(console.log);
-            //     }
-            //}
-        };
 
         init();
     }]

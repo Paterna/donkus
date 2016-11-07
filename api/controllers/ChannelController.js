@@ -39,12 +39,14 @@ module.exports = {
 		var channelName = req.body.name;
 		var desc = req.body.desc;
 		var room = req.body.room;
+		var sip = req.body.sip;
 
 		Channel.create({
 			name: channelName,
 			team: team,
 			description: desc,
-			room: room
+			room: room,
+			sip: sip
 		})
 		.then(function (channel) {
 			res.api_ok(channel);
