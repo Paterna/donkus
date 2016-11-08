@@ -1,10 +1,10 @@
 var exec = require('child_process').exec;
 var config = require('../../config/licode');
 
-var CONTAINER_ID = "9cd3d9f112d9";
+var CONTAINER_ID = "5e9bae51f75d";
 var DOCKER_COMMAND = "docker";
 var DOMAIN = config.sip_session.domain;
-var ERIZO_CALL = "1002@" + DOMAIN;
+var ERIZO_CALL = "1003@" + DOMAIN;
 var ERIZO_CONFERENCE = "3001-" + DOMAIN;
 
 var get_list = DOCKER_COMMAND + ' exec ' + CONTAINER_ID + ' fs_cli -x "conference list"';

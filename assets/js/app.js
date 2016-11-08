@@ -520,6 +520,9 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             roomID: channel.room
                         });
                     }
+                    return channel;
+                })
+                .then(function (channel) {
                     createToken(channel.room, 'presenter', function (token) {
                         var localStream = Erizo.Stream({
                             audio: false,
@@ -638,8 +641,6 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                         localStream.init();
                         document.getElementById('board').scrollTop = document.getElementById('board').scrollHeight;
                     });
-
-
                 })
                 .catch(function (err) {
                     sweetAlert("Error!", err.message, "error");

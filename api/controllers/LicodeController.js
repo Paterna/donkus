@@ -112,7 +112,7 @@ module.exports = {
         var localID;
 
         var localStream = Erizo.Stream({
-            audio: false,
+            audio: true,
             video: false,
             data: true,
             attributes: {
@@ -123,13 +123,10 @@ module.exports = {
         console.log("RoomID for SIP channel:", roomID);
         N.API.createToken(roomID, "SIP_GW", "presenter", function (token) {
             console.log("Token created for SIP session:", token);
-            console.log("In room: ", roomID);
 
             room = Erizo.Room({ token: token });
 
             room.addEventListener("room-connected", function (event) {
-                console.log("Connected to room");
-
                 session.publishConfToErizo({}, localStream, function (id) {
                     console.log("\nPublishCall established\n", id);
                     localID = id;
@@ -160,8 +157,9 @@ module.exports = {
 
         var subscribeToStreams = function (streams) {
             for (var s in streams) {
-                if (localStream.getID() !== s.getID()) {
-                    session.subscribeFromErizo({}, s, function (streamID) {
+                var stream = streams[s];
+                if (localStream.getID() !== stream.getID()) {
+                    session.subscribeFromErizo({}, stream, function (streamID) {
                         console.log("New stream added to SIP:", streamId);
                         setTimeout( function(){
                             fs_cli.update_fs();

@@ -23,39 +23,34 @@ exports.SipErizoSession = function(spec) {
     var getDescriptionErizo = function(mediaHints, session, callback) {
         console.log("gettingDescription from Erizo to Invite");
         session.data.erizoStream = mediaHints.erizoStream;
-        console.log("session data:", session.data);
-        try {
-            if (mediaHints.type === 'publish') {
-                theMsg = {}
-                room.publish(session.data.erizoStream, { createOffer: true }, function(data) {
-                    console.log("callback del publish", session.data.erizoStream.getID());
-                    session.data.erizoStream.pc.setSignalingCallback(function(message) {
-                        if (message.type==='offer') {
-                            console.log("Obtained Offer");
-                            callback(message);
-                        }
-                    });
+        if (mediaHints.type === 'publish') {
+            theMsg = {}
+            room.publish(session.data.erizoStream, { createOffer: true }, function(data) {
+                console.log("callback del publish", session.data.erizoStream.getID());
+                session.data.erizoStream.pc.setSignalingCallback(function(message) {
+                    if (message.type==='offer') {
+                        console.log("Obtained Offer");
+                        callback(message);
+                    }
                 });
-            } else if (mediaHints.type ==='subscribe') {
-                // subscribe con createOffer!!!!
-                room.subscribe(session.data.erizoStream, {
-                    video: false,
-                    audio: true,
-                    createOffer: true
-                }, function(data) {
-                    console.log("callback del subscribe");
-                    session.data.erizoStream.pc.setSignalingCallback(function(message) {
-                        if (message.type==='offer'){
-                            console.log("Obtained Offer");
-                            callback(message);
-                        }
-                    });
+            });
+        } else if (mediaHints.type ==='subscribe') {
+            // subscribe con createOffer!!!!
+            room.subscribe(session.data.erizoStream, {
+                video: false,
+                audio: true,
+                createOffer: true
+            }, function(data) {
+                console.log("callback del subscribe");
+                session.data.erizoStream.pc.setSignalingCallback(function(message) {
+                    if (message.type==='offer'){
+                        console.log("Obtained Offer");
+                        callback(message);
+                    }
                 });
-            } else {
-                console.log("unsupported mediaHints.type:", mediaHints.type);
-            }
-        } catch(e) {
-            console.log(e);
+            });
+        } else {
+            console.log("unsupported mediaHints.type:", mediaHints.type);
         }
     };
 
@@ -68,7 +63,7 @@ exports.SipErizoSession = function(spec) {
             register: true,
             wsServers: 'ws://' + DOMAIN + ':5066',
             authorizationUser: sipUser,
-            password: '1234',
+            password: '9999',
             mediaHandlerFactory: ErizoMediaHandler.defaultFactory,
             log:{ level: "debug" }
         };
@@ -104,8 +99,8 @@ exports.SipErizoSession = function(spec) {
             //3001 conf
             var session = userAgent.invite('3001@' + DOMAIN, {
                 media: {
-                    erizoStream:stream,
-                    type:'publish'
+                    erizoStream: stream,
+                    type: 'publish'
                 }
             });
 
