@@ -159,6 +159,7 @@ module.exports = {
             for (var s in streams) {
                 var stream = streams[s];
                 if (localStream.getID() !== stream.getID()) {
+                    console.log("New added stream:", stream);
                     session.subscribeFromErizo({}, stream, function (streamID) {
                         console.log("New stream added to SIP:", streamId);
                         setTimeout( function(){

@@ -135,7 +135,8 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 views: {
                     'content': {
                         templateUrl: 'partials/sip/call.html',
-                        controller: 'sipCtrl'
+                        controller: 'licodeCtrl'
+                        // controller: 'sipCtrl'
                     }
                 }
             })
@@ -514,15 +515,6 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
             if ($stateParams.channel) {
                 getChannel($stateParams.channel)
                 .then(function (channel) {
-                    if (channel.sip) {
-                        console.log("Canal compatible con llamadas SIP");
-                        $http.post('/api/licode/sipsession', {
-                            roomID: channel.room
-                        });
-                    }
-                    return channel;
-                })
-                .then(function (channel) {
                     createToken(channel.room, 'presenter', function (token) {
                         var localStream = Erizo.Stream({
                             audio: false,
@@ -628,11 +620,16 @@ app.controller('channelsCtrl', ['$rootScope', '$scope', '$state', '$http', '$sta
                             }
 
                             $scope.call = function(channelID) {
-                                room.unsubscribe(stream);
-                                room.unpublish(localStream);
-                                localStream.close();
-                                room.disconnect();
-                                $state.go('call', { channel: channelID });
+                                if (channel.sip) {
+                                    room.unsubscribe(stream);
+                                    room.unpublish(localStream);
+                                    localStream.close();
+                                    room.disconnect();
+                                    $state.go('call', { channel: channelID });
+                                }
+                                else {
+                                    console.log("Not a SIP compatible channel");
+                                }
                             }
                             room.connect();
                         });
@@ -779,6 +776,22 @@ app.controller('sideMenuCtrl', ['$scope', '$state', '$stateParams', '$http',
     }]
 );
 
+// app.controller('sipCtrl', ['$scope', '$state', '$stateParams', '$https',
+//     function($scope, $state, $stateParams, $http) {
+
+//         var init = function () {
+//             $http.post('/api/licode/sipsession/' + $stateParams.channel.room)
+//             .then()
+//             .catch(function (err) {
+//                 sweetAlert("Error!", "Something went wrong", "error");
+//                 console.error(err);
+//             });
+//         }
+
+//         init();
+//     }]
+// );
+
 app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
     function ($scope, $state, $stateParams, $http) {
         window.$scope = $scope;
@@ -800,6 +813,13 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             .then(function (data) {
                 var roomID = data.channel.room;
                 var room = $http.get('/api/licode/room/' + roomID);
+                if (data.channel.sip) {
+                    console.log("RoomID:", roomID);
+                    $http.post('/api/licode/sipsession/', {
+                        roomID: roomID
+                    });
+                    console.log("SIP GW ready");
+                }
                 return room;
             })
             .then(function (room) {
