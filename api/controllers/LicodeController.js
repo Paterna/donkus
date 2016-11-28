@@ -14,7 +14,7 @@ var fs_cli = require('../services/fs_cli_adaptor.js');
 N.API.init(config.nuve.superserviceID, config.nuve.superserviceKey, 'http://localhost:3000/');
 
 module.exports = {
-    getCurrentRoom: function(req, res) {
+    getCurrentRoom: function (req, res) {
         var myRoom;
 
         N.API.getRooms(function (roomlist) {
@@ -37,7 +37,7 @@ module.exports = {
             res.api_error({ code: 10, message: err });
         });
     },
-    getRooms: function(req, res) {
+    getRooms: function (req, res) {
         "use strict";
 
         N.API.getRooms(function (rooms) {
@@ -46,7 +46,7 @@ module.exports = {
             res.api_error({ code: 11, message: err });
         });
     },
-    getRoom: function(req, res) {
+    getRoom: function (req, res) {
         "use strict";
         var room = req.params.room;
 
@@ -56,7 +56,7 @@ module.exports = {
             res.api_error({ code: 12, message: err });
         });
     },
-    createRoom: function(req, res) {
+    createRoom: function (req, res) {
         "use strict";
         var roomName = req.body.name;
         // See Create Rooms documentation in http://lynckia.com/licode/server-api.html
@@ -69,7 +69,7 @@ module.exports = {
             res.api_error({ code: 13, message: err });
         }, options);
     },
-    deleteRoom: function(req, res) {
+    deleteRoom: function (req, res) {
         "use strict";
         var room = req.params.room;
 
@@ -79,20 +79,20 @@ module.exports = {
             res.api_error({ code: 14, message: err });
         });
     },
-    createToken: function(req, res) {
+    createToken: function (req, res) {
         "use strict";
         var room = req.params.room;
         var username = req.user.name;
         var role = req.body.role || '';
 
         console.log("Creating token with role", role, "in room", room);
-        N.API.createToken(room, username, role, function(token) {
+        N.API.createToken(room, username, role, function (token) {
             res.api_ok(token);
         }, function (err) {
             res.api_error({ code: 20, message: err });
         });
     },
-    getUsers: function(req, res) {
+    getUsers: function (req, res) {
         "use strict";
         var room = req.params.room;
         N.API.getUsers(room, function (userslist) {
@@ -110,6 +110,7 @@ module.exports = {
         var room;
         var session;
         var localID;
+        var streams = [];
 
         var localStream = Erizo.Stream({
             audio: true,
@@ -139,10 +140,19 @@ module.exports = {
 
             room.addEventListener("stream-added", function (event) {
                 console.log('Stream added:', event.stream.getID());
-
-                var streams = [];
                 streams.push(event.stream);
                 subscribeToStreams(streams);
+            });
+
+            room.addEventListener("stream-removed", function (event) {
+                console.log('Stream removed:', event.stream.getID());
+                streams.splice(streams.indexOf(event.stream), 1);
+                console.log("Number of streams:", streams.length);
+                if (streams.length <= 1) {
+                    room.unsubscribe(event.stream);
+                    localStream.close();
+                    room.disconnect();
+                }
             });
 
             session = sipMgr.SipErizoSession({ room: room });
