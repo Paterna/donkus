@@ -140,8 +140,15 @@ module.exports = {
 
             room.addEventListener("stream-added", function (event) {
                 console.log('Stream added:', event.stream.getID());
-                streams.push(event.stream);
-                subscribeToStreams(streams);
+                if (streams.length <= 1) {
+                    room.unsubscribe(event.stream);
+                    localStream.close();
+                    room.disconnect();
+                }
+                else {
+                    streams.push(event.stream);
+                    subscribeToStreams(streams);
+                }
             });
 
             room.addEventListener("stream-removed", function (event) {

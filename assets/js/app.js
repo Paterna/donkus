@@ -840,6 +840,28 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             localStream = Erizo.Stream(config);
             var room = Erizo.Room({ token: token });
 
+            localStream.addEventListener("access-denied", function () {
+                swal({
+                        title: "No video nor audio sources found",
+                        text:'Try again?',
+                        type: "info",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes",
+                        cancelButtonText: "No",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    }, function (isConfirm) {
+                        localStream.close();
+                        if (isConfirm)
+                            init();
+                        else
+                            document.getElementById('container-side').style.display = "block";
+                            document.getElementById('content-side').style.display = "block";
+                            $state.go('channel', { channel: $stateParams.channel });
+                    });
+            });
+
             localStream.addEventListener("access-accepted", function () {
                 var stream = null;
                 $scope.localStream = localStream;
