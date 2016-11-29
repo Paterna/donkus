@@ -106,6 +106,7 @@ module.exports = {
         });
     },
     setSipSession: function (req, res) {
+        "use strict";
         var roomID = req.body.roomID;
         var room;
         var session;
