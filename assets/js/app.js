@@ -131,6 +131,7 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
                 require: { auth: true }
             })
             .state('call', {
+                /* TO DO */
                 url: '/call/:channel',
                 views: {
                     'content': {
@@ -812,18 +813,13 @@ app.controller('licodeCtrl', ['$scope', '$state', '$stateParams', '$http',
             $http.get('/api/channel/' + $stateParams.channel)
             .then(function (data) {
                 var roomID = data.channel.room;
-                var room = $http.get('/api/licode/room/' + roomID);
                 if (data.channel.sip) {
-                    console.log("RoomID:", roomID);
                     $http.post('/api/licode/sipsession/', {
                         roomID: roomID
                     });
                     console.log("SIP GW ready");
                 }
-                return room;
-            })
-            .then(function (room) {
-                var token = $http.post('/api/licode/token/create/' + room._id, { role: 'presenter' });
+                var token = $http.post('/api/licode/token/create/' + roomID, { role: 'presenter' });
                 return token;
             })
             .then(startCall)
